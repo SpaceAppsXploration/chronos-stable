@@ -1,0 +1,142 @@
+{
+    "@context": {
+        "@base"  : "http://pramantha.eu/ontology",
+        "chronos": "http://pramantha.eu/ontology/",
+        "schema" : "https://schema.org/",
+        "skos"   : "http://www.w3.org/2004/02/skos/core#",
+        "rdf"    : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "rdfs"   : "http://www.w3.org/2000/01/rdf-schema#",
+        "owl"    : "http://www.w3.org/2002/07/owl#",
+        "dbpedia": "http://dbpedia.org/ontology/"
+    },
+
+    "@id": "",
+    "@type": "http://www.w3.org/2002/07/owl#Ontology",
+    "defines": [
+        {
+            "@id": "http://pramantha.eu/ontology/relKeyword",
+            "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+            "rdfs:label": "is related to a keyword Concept",
+            "rdfs:comment": "subject-document is in a semantic relation with the object-keyword",
+            "rdfs:domain": "http://pramantha.eu/ontology/dbpediadoc",
+            "rdfs:range": "http://pramantha.eu/ontology/keyword"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/relMission",
+            "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+            "rdfs:label": "is related to a space mission or a space launch",
+            "rdfs:comment": "subject-document is historically or technically related to a space mission",
+            "rdfs:domain": ["http://pramantha.eu/ontology/dbpediadoc", "http://pramantha.eu/ontology/webpage", "http://pramantha.eu/ontology/event"],
+            "rdfs:range": ["http://pramantha.eu/ontology/mission", "http://pramantha.eu/ontology/launch"]
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/relEvent",
+            "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+            "rdfs:label": "is a document related to an event",
+            "rdfs:comment": "subject-document is semantically related with an event or happening",
+            "rdfs:domain": "http://pramantha.eu/ontology/dbpediadoc",
+            "rdfs:range": "http://pramantha.eu/ontology/event"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/relTarget",
+            "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+            "rdfs:label": "is a document related to a celestial body named",
+            "rdfs:comment": "subject-document is semantically related to a celestial body",
+            "rdfs:domain": ["http://pramantha.eu/ontology/dbpediadoc", "http://pramantha.eu/ontology/launch", "http://pramantha.eu/ontology/mission", "http://pramantha.eu/ontology/webpage"],
+            "rdfs:range": ["http://dbpedia.org/ontology/Planet", "http://dbpedia.org/ontology/Satellite", "http://dbpedia.org/ontology/Asteroid", "http://dbpedia.org/ontology/CelestialBody"]    
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/payload",
+            "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+            "rdfs:label": "is a mission that carries the payload named",
+            "rdfs:comment": "subject-document is a mission or a launch carrying the object-document",
+            "rdfs:domain": ["http://pramantha.eu/ontology/launch", "http://pramantha.eu/ontology/mission"],
+            "rdfs:range": ["http://pramantha.eu/ontology/sensor"]
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/relatedMatch",
+            "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+            "rdfs:label": "is a DBpedia document with an high level of semantical relation with",
+            "rdfs:comment": "a DBpedia document highly semantically related to another of the same kind",
+            "rdfs:domain": "http://pramantha.eu/ontology/dbpediadoc",
+            "rdfs:range": "http://pramantha.eu/ontology/dbpediadoc"
+        },
+        {
+            "@id": "https://schema.org/about",
+            "@type": "http://www.w3.org/2002/07/owl#ObjectProperty",
+            "rdfs:domain": "http://pramantha.eu/ontology/webpage",
+            "rdfs:range": "http://pramantha.eu/ontology/keyword"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/keyword",
+            "@type": "skos:Concept",
+            "rdfs:label": "NASA-STI keyword",
+            "rdfs:comment": "a keyword representing a Concept in the NASA-STI taxonomy"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/dbpediadoc",
+            "@type": "http://www.w3.org/2002/07/owl#Class",
+            "rdfs:label": "data taken from a DBpedia page",
+            "rdfs:comment": "a document representing a wikipedia page information"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/launch",
+            "@type": "http://www.w3.org/2002/07/owl#Class",
+            "rdfs:label": "a space launch that took place somewhen in the past",
+            "rdfs:comment": "a document representing a space launch taken from wikipedia page"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/mission",
+            "@type": "http://www.w3.org/2002/07/owl#Class",
+            "rdfs:label": "a space mission",
+            "rdfs:comment": "a document representing a space mission from Chronos legacy"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/event",
+            "@type": "http://www.w3.org/2002/07/owl#Class",
+            "rdfs:label": "an event or happening related with a space mission",
+            "rdfs:comment": "a document representing an event or happening from Chronos legacy"
+        },
+                {
+            "@id": "http://pramantha.eu/ontology/webpage",
+            "@type": "https://schema.org/CreativeWork",
+            "rdfs:label": "a crawled webpage",
+            "rdfs:comment": "a document representing a webpage"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/group",
+            "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#PlainLiteral",
+            "rdfs:label": "can be queried as a member of this group",
+            "rdfs:comment": "a string assigning the document to a set or a Class in the datastore, useful for fast querying"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/space/CelestialBody",
+            "owl:sameAs": "http://dbpedia.org/ontology/CelestialBody",
+            "@type": "http://www.w3.org/2002/07/owl#Class",
+            "rdfs:label": "a celestial body",
+            "rdfs:comment": "a document representing a generic celestial body"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/space/Planet",
+            "owl:sameAs" : "http://dbpedia.org/ontology/Planet",
+            "@type": "http://dbpedia.org/ontology/CelestialBody",
+            "rdfs:label": "a planet",
+            "rdfs:comment": "a document representing a planet"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/space/Satellite",
+            "owl:sameAs": "http://dbpedia.org/ontology/Satellite",
+            "@type": "http://dbpedia.org/ontology/CelestialBody",
+            "rdfs:label": "a natural satellite",
+            "rdfs:comment": "a document representing a natural satellite"
+        },
+        {
+            "@id": "http://pramantha.eu/ontology/space/Asteroid",
+            "owl:sameAs": "http://dbpedia.org/ontology/Asteroid",
+            "@type": "http://dbpedia.org/ontology/CelestialBody",
+            "rdfs:label": "an asteroid",
+            "rdfs:comment": "a document representing an asteroid"
+        }
+    ]
+
+}

@@ -1,0 +1,9 @@
+BeautifulSoup4
+requests
+pymongo==2.7.2
+pyorient==1.2.5
+# rdflib==4.1.2
+selenium
+simplejson
+# bson
+# phantomJS
