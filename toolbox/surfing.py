@@ -2,13 +2,12 @@ __author__ = 'lorenzo'
 
 from html.parser import HTMLParser
 
-from datastoreapi.wrapper import Wrapper
 from toolbox.pediacache import DBpediaCache
 from toolbox.tools import from_dbpedia_url_return_slug
 import toolbox.customErrors as customErrors
 
 
-class JsonLD(DBpediaCache, Wrapper):
+class JsonLD(DBpediaCache):
     """
     This class is for traversing JSON-LDs and finding/fetching values from their keys
     """
@@ -17,7 +16,7 @@ class JsonLD(DBpediaCache, Wrapper):
 
     def get_body_text_from_dbpedia_json(self, url):
         """
-        From the url returns the text in the term's body
+        From the url returns the text in the term's body traversing the JSON-LD
         :param url: a /data/*.jsond url
         :returnType: bytes
         :return: the text in the document body or None if there is no abstract

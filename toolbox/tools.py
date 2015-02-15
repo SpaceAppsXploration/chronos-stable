@@ -12,16 +12,13 @@ import simplejson as json
 import html.parser
 from codecs import raw_unicode_escape_decode
 
-# resource repositories links
-DBPEDIA_URL = "http://dbpedia.org/data/%s.jsond"        # string-substitute with wikipage title (slug)
-DBPEDIA_RESOURCE = "http://dbpedia.org/resource/%s"     # string-substitute with wikipage title (slug)
-PRAMANTHA_URL = "http://pramantha.eu/%s/%s"             # domain for local resources (chronos:group, slug)
+from datastoreapi.wrapper import DBPEDIA_URL, PRAMANTHA_URL, DBPEDIA_RESOURCE, CHRONOS_GROUPS
 
 
 def retrieve(url):
     """
     Utility: URL's body fetching
-    :rtype : basestring
+    :rtype : str()
     :param url: URL to fetch
     :return: body of the url in unicode with parsed HTML entities
     """
@@ -117,42 +114,41 @@ def from_dbpedia_url_return_slug(url):
         slug = jsond_url[pos + 6:-6]
         return slug
 
-    def __get_slug_from_resource_url(res_url):
+    def __get_slug_from_resource_url(res_url, pos, lng):
         """
         From a DBpedia (page or resource) url returns the dbpedia slug of the term
         """
-        pos0 = res_url.rfind('/resource/')
-        pos1 = res_url.rfind('/page/')
-
-        if pos0 != -1:
-            slug = res_url[pos0 + 10:]
-            return slug
-        elif pos1 != -1:
-            slug = res_url[pos1 + 6:]
-            return slug
-
-        raise Exception("get_slug_from_jsond_url(): Wrong argument, it has to be a /resource/* or a /page/* kind")
+        slug = res_url[pos + lng:]
+        return slug
 
     if url[-5:] == "jsond":
         # if Odata makes resource url and then cache @id
         title = __get_slug_from_jsond_url(url)
-    elif url.find("/resource/") or url.find("/page/"):
+    elif url.find("/resource/") != -1:
         # if resource url makes cache @id url
-        title = __get_slug_from_resource_url(url)
+        p = url.find("/resource/")
+        title = __get_slug_from_resource_url(url, p, len("/resource/"))
+    elif url.find("/page/") != -1:
+        p = url.find("/page/")
+        title = __get_slug_from_resource_url(url, p, len("/page/"))
+    elif url.find("/ontology/") != -1:
+        p = url.find("/ontology/")
+        title = __get_slug_from_resource_url(url, p, len("/ontology/"))
 
     return title
 
 
-def get_slug_from_pramantha_dbpediadocs(url):
+def get_slug_from_pramantha_url(url):
     """
-    From a Chronos @id returns the dbpedia slug of the term
+    From a Chronos @id returns the slug contained in the url
     """
-    pos = url.find('/dbpediadocs/')
-    if pos == -1:
-        raise Exception("get_slug_from_pramantha_url: Wrong argument, it has to be a pramantha.eu/dbpediadocs/* kind")
+    for g in CHRONOS_GROUPS:
+        pos = url.find(g)
+        if pos != -1:
+            slug = url[pos + len(g):]
+            return slug[1:]
 
-    slug = url[pos + 13:]
-    return slug
+    raise Exception("get_slug_from_pramantha_url: Wrong argument, it has to be a pramantha.eu/<group>/* kind")
 
 
 def make_pramantha_url_from_slug(kind, trm):
@@ -181,6 +177,7 @@ def make_jsond_url_from_slug(trm):
     :return: a DBpedia's resource url
     """
     return DBPEDIA_URL % trm
+
 
 def get_resource_url_from_jsond_url(url):
     """

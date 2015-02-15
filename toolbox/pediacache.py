@@ -7,12 +7,14 @@ from pymongo.errors import DuplicateKeyError, DocumentTooLarge
 import toolbox.customErrors as customErrors
 
 
-class DBpediaCache(Wrapper):
+class DBpediaCache():
     """
     This class manages operations of storing/retrieving/fetching on the DBpediacache collection
     """
-    def __init__(self, unittest=False):
-        super().__init__(unittest=unittest)
+    def __init__(self):
+        self.connection = Wrapper()
+        self.db = self.connection.return_connection()
+
 
     def get_or_retrieve_and_store(self, slug):
         """
@@ -35,12 +37,12 @@ class DBpediaCache(Wrapper):
                 raise Exception(e)
 
             try:
-                self.return_connection().DBpediacache.insert(cache)
+                self.db.DBpediacache.insert(cache)
                 print("DBPEDIA CACHE INSERTED <<<<<<<<<<<<<<<")
             except (DuplicateKeyError, DocumentTooLarge):
                 return None
 
-        doc = self.return_connection().DBpediacache.find_one({"@id": at_id})
+        doc = self.db.DBpediacache.find_one({"@id": at_id})
 
         if doc is None:
             # retrieve and store
