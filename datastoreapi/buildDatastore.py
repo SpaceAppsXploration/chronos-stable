@@ -7,10 +7,11 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(CURRENT_DIR))
 
 from pymongo.errors import CollectionInvalid
-from datastoreapi.Wrapper import Wrapper
+from datastoreapi.wrapper import *
+from toolbox import tools
 
 
-class Build(Wrapper):
+class Build():
     """
     This class contains all the methods used in "main" package's steps
     ------------------------------------------------------------------
@@ -45,8 +46,9 @@ class Build(Wrapper):
     :method store_webpages_mongo_documents
     """
 
-    def __init__(self, mongod):
-        self.mongod = mongod
+    def __init__(self):
+        self.connection = Wrapper()
+        self.mongod = self.connection.return_connection()
 
         # create collections in DB
         try:
@@ -71,9 +73,6 @@ class Build(Wrapper):
 
         import simplejson as json
         import platform
-
-        self.sensors = None
-
         path = os.path.abspath(os.path.join(CURRENT_DIR, os.pardir))
         if platform.system() == 'Linux':
             ''' linux path '''
@@ -82,16 +81,33 @@ class Build(Wrapper):
             '''  windows path  '''
             path += '\\SensorOntology\\'
 
+        # Loading  Sensors ontology from file
+        self.sensors = None
         with open(path + "SpaceSensor_json-ld_v2.json", "r", encoding="utf8") as jsonld:
             self.sensors = json.loads(jsonld.read())
 
-        self.ontology = None
+        # Loading  Chronos ontology from file
+        self.chronos = None
         with open(path + "ChronosOntology.json", "r", encoding="utf8") as jsonld:
             self.chronos = json.loads(jsonld.read())
 
-        print("Build Constructor")
+        # Loading  Astronomy ontology from file
+        self.astronomy = None
+        with open(path + "Astronomy.json", "r", encoding="utf8") as jsonld:
+            self.astronomy = json.loads(jsonld.read())
 
+        # Loading  Engineering ontology from file
+        self.engineering = None
+        with open(path + "Engineering.json", "r", encoding="utf8") as jsonld:
+            self.engineering = json.loads(jsonld.read())
+
+        print("Build Constructor")
+        # Finished initializing the basic building object
+
+    #
+    # Starting of the main algorithm methods
     # Step 1: add ontologies to the datastore
+    #
     def add_ontologies(self):
         """
         Takes ontologies from the files and stores them as single documents in the 'ontology' collection.
@@ -99,32 +115,38 @@ class Build(Wrapper):
          to the ontology documents with skos:exactMatch property
         :return:
         """
-        from toolbox import tools
-        from datastoreapi.ResourceObjects.repoDocs import PublicRepoDocument
-        from datastoreapi.Wrapper import Wrapper
+        from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
         from datastoreapi.datastoreErrors import DocumentExists
 
         sensors = self.sensors['defines']
         chronos = self.chronos['defines']
+        astronomy = self.astronomy['defines']
+        engineering = self.engineering['defines']
 
-        ontologies = sensors + chronos
+        ontologies = sensors + chronos + astronomy + engineering
+        # from pprint import pprint
+        # pprint(ontologies)
 
         if self.mongod.ontology.find().count() == 0:
             for doc in ontologies:
                 id_ = self.mongod.ontology.insert(doc)
-                if "owl:sameAs" in doc.keys() and doc["owl:sameAs"][:19] == 'http://pramantha.eu':
-                    new_url = Wrapper.DBPEDIA_URL % tools.get_slug_from_pramantha_url(doc["owl:sameAs"])
-                    new = PublicRepoDocument(dbpedia=new_url)
+                if "owl:sameAs" in doc.keys() and doc["owl:sameAs"].find('dbpedia.org') != -1:
+                    new_url = doc["owl:sameAs"]
                     try:
+                        new = PublicRepoDocument(dbpedia=new_url)
                         resource = new.store_wiki_resource()
+                        del new
                     except DocumentExists:
                         try:
-                            resource = self.mongod.base.find_one({"@id": Wrapper.PRAMANTHA_URL % tools.get_slug_from_pramantha_url(doc["owl:sameAs"])})
+                            look_for = PRAMANTHA_URL % ('dbpediadocs', tools.from_dbpedia_url_return_slug(doc["owl:sameAs"]))
+                            print(look_for)
+                            resource = self.mongod.base.find_one({"@id": look_for})
                         except Exception as e:
                             print(str(e) + " link_webpage_to_kwd_by_abstract() no dbpediadocs found")
                             continue
+                    if resource is not None:
+                        self.connection.append_link_to_mongodoc(resource, "skos:exactMatch", doc, "base")
 
-                    Wrapper.append_link_to_mongodoc(resource, "skos:exactMatch", doc, "base")
                 print(id_)
 
         return None
@@ -137,7 +159,7 @@ class Build(Wrapper):
         :return: None
         """
         # load XML-munching utilities
-        from datastoreapi.XMLstringHandler.XMLskos import XMLskos
+        from objectsapi.XMLstringHandler.XMLskos import XMLskos
         from input.JPLSKOS.jpl_skos import jpl_skos_xml
 
         xml_processing = XMLskos(xml_string=jpl_skos_xml)
@@ -161,7 +183,7 @@ class Build(Wrapper):
         :return: None
         """
         # load XML-munching utilities
-        from datastoreapi.XMLstringHandler.XMLskos import XMLskos
+        from objectsapi.XMLstringHandler.XMLskos import XMLskos
         from input.JPLSKOS.jpl_skos import jpl_skos_xml
 
         xml_processing = XMLskos(xml_string=jpl_skos_xml)
@@ -217,7 +239,7 @@ class Build(Wrapper):
         :return: None
         """
         from tagmeapi.tagMeOperation import TagMeOperation
-        from datastoreapi.ChronosObjects.chronosTarget import CHRONOStarget
+        from objectsapi.ChronosObjects.chronosTarget import CHRONOStarget
         from input.Targets.targets import Chronos_Targets
 
         ops = TagMeOperation()
@@ -238,30 +260,30 @@ class Build(Wrapper):
         and many others about launches
         :return: None
         """
-        from datastoreapi.ChronosObjects.chronosMission import CHRONOSmission
+        from objectsapi.ChronosObjects.chronosMission import CHRONOSmission
         from input.Missions.missions import Chronos_Missions
         from input.Launches.GetLaunches import get_launches_from_file
 
         # aggregate missions by codename
-        MISSIONS = {}
+        missions_to_store = {}
 
         for m in Chronos_Missions:
-            if m["codename"] not in MISSIONS.keys():
-                MISSIONS[m["codename"]] = m
-                target = MISSIONS[m["codename"]]["target"]
-                MISSIONS[m["codename"]]["target"] = list()
-                MISSIONS[m["codename"]]["target"].append(target)
+            if m["codename"] not in missions_to_store.keys():
+                missions_to_store[m["codename"]] = m
+                target = missions_to_store[m["codename"]]["target"]
+                missions_to_store[m["codename"]]["target"] = list()
+                missions_to_store[m["codename"]]["target"].append(target)
             else:
-                MISSIONS[m["codename"]]["target"].append(m["target"])
+                missions_to_store[m["codename"]]["target"].append(m["target"])
                 if "slug" in m:
-                    MISSIONS[m["codename"]]["slug"] = m["slug"]
-        MISSIONS = list(MISSIONS.values())
+                    missions_to_store[m["codename"]]["slug"] = m["slug"]
+        missions_to_store = list(missions_to_store.values())
 
-        from pprint import pprint
-        pprint(MISSIONS)
+        # from pprint import pprint
+        # pprint(missions_to_store)
 
         # first part added from mission.py file
-        for m in MISSIONS:
+        for m in missions_to_store:
             new = CHRONOSmission(m)
             new.store_mission()
 
@@ -278,7 +300,7 @@ class Build(Wrapper):
     def add_events():
         from toolbox import tools
         from input.Details.missions_ids import missions_ids
-        from datastoreapi.ChronosObjects.chronosEvent import CHRONOSEvent
+        from objectsapi.ChronosObjects.chronosEvent import CHRONOSEvent
 
         for i in missions_ids:
             # retrieve events referred to a mission from old APIs
@@ -311,9 +333,9 @@ class Build(Wrapper):
         return None
 
     def semantic_links_for_missions(self):
-        from toolbox import tools
+        from toolbox import surfing
         from tagmeapi.tagMeService import TagMeService, BadRequest
-        from datastoreapi.ResourceObjects.repoDocs import PublicRepoDocument
+        from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
         from datastoreapi.datastoreErrors import DocumentExists, DocumentExistNot
 
         def tag_and_link_resources_to_mission(mssn, txt):
@@ -325,7 +347,7 @@ class Build(Wrapper):
             except BadRequest:
                 raise BadRequest('retrieve_taggings in semantic_links_for_missions() Failed')
 
-            #print(found)
+            # print(found)
 
             if found["annotations"]:
                 for f in found["annotations"]:
@@ -336,17 +358,18 @@ class Build(Wrapper):
                     doc = self.mongod.base.find_one({"skos:altLabel": alt_label})
                     if doc is None:
                         # store resource and link resource[chronos:mission] = mission document
-                        new_url = self.DBPEDIA_URL % alt_label
+                        new_url = DBPEDIA_URL % alt_label
                         new = PublicRepoDocument(dbpedia=new_url)
                         new_doc = new.store_wiki_resource()
+                        del new
                         if new_doc is None:
                             return
-                        self.append_link_to_mongodoc(new_doc, "chronos:relMission", mssn, "base")
+                        self.connection.append_link_to_mongodoc(new_doc, "chronos:relMission", mssn, "base")
 
                     else:
                         # link resource[chronos:mission] = mission document
                         try:
-                            self.append_link_to_mongodoc(doc, "chronos:relMission", mssn, "base")
+                            self.connection.append_link_to_mongodoc(doc, "chronos:relMission", mssn, "base")
                         except DocumentExists:
                             pass
 
@@ -359,7 +382,9 @@ class Build(Wrapper):
             # get body of the resource
             to_crawl = m["owl:sameAs"][0]["@value"]  # "http://dbpedia.org/data/Clementine_(spacecraft).jsond"
             try:
-                text = tools.get_body_text_from_dbpedia_json(to_crawl)
+                new = surfing.JsonLD()
+                text = new.get_body_text_from_dbpedia_json(to_crawl)
+                del new
             except DocumentExistNot:
                 continue
             tag_and_link_resources_to_mission(m, text)
@@ -373,7 +398,7 @@ class Build(Wrapper):
         if yes link resources with "chronos:relatedMatch"
         :return:
         """
-        from toolbox import tools
+        from toolbox import surfing
         from datastoreapi.datastoreErrors import DocumentExists
         from tagmeapi.tagMeService import TagMeService
 
@@ -383,20 +408,22 @@ class Build(Wrapper):
             # relate with the rest of dbpedias
             # filter by rhos
             # link each other chronos:relatedMatch
-            name = tools.get_slug_from_jsond_url(d["owl:sameAs"][0]["@value"])
+            name = tools.from_dbpedia_url_return_slug(d["owl:sameAs"][0]["@value"])
             for d2 in dbpedias:
-                comparing = tools.get_slug_from_jsond_url(d2["owl:sameAs"][0]["@value"])
+                ops = surfing.JsonLD()
+                comparing = tools.from_dbpedia_url_return_slug(d2["owl:sameAs"][0]["@value"])
+                del ops
                 if name != "Space" and comparing != "Space" and name != comparing:
                     print("Relating...")
                     output = TagMeService.relate(name, comparing, min_rho=0.67)
                     if len(output) != 0:
                         print(">>>>>>>>>>>>>>>> Linking " + name + " with " + comparing)
                         try:
-                            self.append_link_to_mongodoc(d, "chronos:relatedMatch", d2, "base")
+                            self.connection.append_link_to_mongodoc(d, "chronos:relatedMatch", d2, "base")
                         except DocumentExists:
                             pass
                         try:
-                            self.append_link_to_mongodoc(d2, "chronos:relatedMatch", d, "base")
+                            self.connection.append_link_to_mongodoc(d2, "chronos:relatedMatch", d, "base")
                         except DocumentExists:
                             pass
         dbpedias.close()
@@ -408,7 +435,7 @@ class Build(Wrapper):
         Does the crawling in agencies websites and store results in 'crawling' collection
         :return: None
         """
-        from datastoreapi.ResourceObjects.agenciesWebPages import CrawlSearchEngine
+        from objectsapi.ResourceObjects.agenciesWebPages import CrawlSearchEngine
         new = CrawlSearchEngine()
         new.start_loops()  # crawl and save in crawling cache
 
@@ -421,7 +448,7 @@ class Build(Wrapper):
         Store in the documents in the 'crawling' collection
         :return: None
         """
-        from datastoreapi.ResourceObjects.agenciesWebPages import WebPages
+        from objectsapi.ResourceObjects.agenciesWebPages import WebPages
 
         for p in self.mongod.crawling.find({}):  # query cache and store in base collection
             storeit = WebPages(cache_obj=p, publisher=p["home"])
@@ -434,10 +461,10 @@ class Build(Wrapper):
         Store webpages' documents from 'crawling' collection to 'webpages' collection
         :return:
         """
-        from datastoreapi.basicDocs import BasicDoc
+        from objectsapi.basicDocs import BasicDoc
         from datastoreapi.datastoreErrors import DocumentExists
         from tagmeapi.tagMeService import TagMeService
-        from datastoreapi.ResourceObjects.repoDocs import PublicRepoDocument
+        from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
         agencies = ["NASA", "JAXA", "European Space Agency"]
 
         crawled = self.mongod.crawling.find({}, timeout=False)
@@ -463,8 +490,8 @@ class Build(Wrapper):
                 # for a in annotations: retrieve or store wiki doc
                 for a in results:
                     slug = a['title'].replace(' ', '_')
-                    dbpedia = self.DBPEDIA_URL % slug
-                    chronos_id = self.PRAMANTHA_URL % ("dbpediadocs", slug)
+                    dbpedia = DBPEDIA_URL % slug
+                    chronos_id = PRAMANTHA_URL % ("dbpediadocs", slug)
                     new = PublicRepoDocument(dbpedia=dbpedia)
                     try:
                         new_doc = new.store_wiki_resource()
@@ -481,7 +508,7 @@ class Build(Wrapper):
                         for n in new_doc["chronos:relKeyword"]:
                             # if wiki doc is linked to a keyword: store link URL_doc["schema:about"]: keyword
                             try:
-                                self.append_link_to_mongodoc(url_doc, "schema:about", n, "webpages")
+                                self.connection.append_link_to_mongodoc(url_doc, "schema:about", n, "webpages")
                                 print("Annotations store in url document")
                             except DocumentExists:
                                 pass
@@ -490,7 +517,7 @@ class Build(Wrapper):
                     if t:
                         # if annotation is a Target, add chronos:relTarget
                         try:
-                            self.append_link_to_mongodoc(url_doc, "chronos:relTarget", t, "webpages")
+                            self.connection.append_link_to_mongodoc(url_doc, "chronos:relTarget", t, "webpages")
                             print("Annotation of Target added")
                         except DocumentExists:
                             pass
@@ -498,7 +525,7 @@ class Build(Wrapper):
                     m = self.mongod.base.find_one({"chronos:slug": slug, "chronos:group": "missions"})
                     if m:
                         try:
-                            self.append_link_to_mongodoc(url_doc, "chronos:relMission", m, "webpages")
+                            self.connection.append_link_to_mongodoc(url_doc, "chronos:relMission", m, "webpages")
                             print("Annotation of Mission added")
                         except DocumentExists:
                             continue
@@ -506,25 +533,27 @@ class Build(Wrapper):
             return None
 
         for res in crawled:
-            at_id = self.PRAMANTHA_URL % ("urls", res["hashed"])
+            at_id = PRAMANTHA_URL % ("urls", res["hashed"])
             check = self.mongod.webpages.find_one({"@id": at_id})
             if check is not None:
                 # update keyword (append to chronos:keyword)
                 kwd = self.mongod.base.find_one({
-                    "@id": self.PRAMANTHA_URL % ("keywords", res["keyword"])})
+                    "@id": PRAMANTHA_URL % ("keywords", res["keyword"])})
                 if kwd is not None:
                     try:
-                        self.append_link_to_mongodoc(check, "schema:about", kwd, "webpages")
+                        self.connection.append_link_to_mongodoc(check, "schema:about", kwd, "webpages")
                         print("FIRST TRY: STORING Keyword Related in URLS and KWD: " + check["@id"])
                     except DocumentExists:
                         pass
             else:
-                #create webpagedoc in webpages collection (BasicDoc.blank_webpage())
+                # create webpagedoc in webpages collection (BasicDoc.blank_webpage())
                 publisher = res["home"]
                 if res["home"] == "ESA":
                     publisher = "European_Space_Agency"
                 # fill basic properties
-                doc = BasicDoc.blank_webpage()
+                new = BasicDoc()
+                doc = new.blank_webpage()
+                del new
                 doc["@id"] = at_id
                 doc["chronos:base64"] = res["hashed"]
                 doc["schema:url"]["@value"] = res["url"]
@@ -538,7 +567,7 @@ class Build(Wrapper):
                 kwd = self.mongod.base.find_one({"chronos:group": "keywords", "skos:prefLabel": res["key"]})
                 if kwd is not None:
                     try:
-                        self.append_link_to_mongodoc(url_doc, "schema:about", kwd, "webpages")
+                        self.connection.append_link_to_mongodoc(url_doc, "schema:about", kwd, "webpages")
                         print("FIRST TRY: STORING Keyword Related in URLS and KWD: " + url_doc["@id"])
                     except DocumentExists:
                         pass
@@ -549,7 +578,7 @@ class Build(Wrapper):
                     # update the "chronos:relMission" property
                     if qm is not None:
                         try:
-                            self.append_link_to_mongodoc(url_doc, "chronos:relMission", qm, "webpages")
+                            self.connection.append_link_to_mongodoc(url_doc, "chronos:relMission", qm, "webpages")
                         except DocumentExists:
                             pass
                 # set a string representing abstract and title of webpage
@@ -562,8 +591,8 @@ class Build(Wrapper):
 
                 # fill dbpediadoc with TagMe
                 link_webpage_to_kwd_by_abstract(docstring=docstring, url_doc=url_doc)
-                #if res is in Targets add chronos:relTarget
-                #else take annotations' dbpediadocs and schema:about their chronos:keyword
+                # if res is in Targets add chronos:relTarget
+                # else take annotations' dbpediadocs and schema:about their chronos:keyword
 
         crawled.close()
         return None
@@ -571,3 +600,5 @@ class Build(Wrapper):
     to_be_excluded = ["Drives_(Lonnie_Smith_album)", "Internets", "Tunnels_(owarai)", "Manual_(music)",
               "Blood_plasma", "Ambient_music", "The_Plotters", "Architecture", "2C_(psychedelics)",
               "E4_(TV_channel)", "KLIM (Nestlé)"]
+
+
