@@ -69,7 +69,7 @@
         },
         {
             "@id": "http://pramantha.eu/ontology/keyword",
-            "@type": "skos:Concept",
+            "@type": "http://www.w3.org/2004/02/skos/core#Concept",
             "rdfs:label": "NASA-STI keyword",
             "rdfs:comment": "a keyword representing a Concept in the NASA-STI taxonomy"
         },
@@ -82,18 +82,21 @@
         {
             "@id": "http://pramantha.eu/ontology/launch",
             "@type": "http://www.w3.org/2002/07/owl#Class",
-            "rdfs:label": "a space launch that took place somewhen in the past",
+            "owl:sameAs": "http://umbel.org/umbel/rc/GroundToOrbitVehicle",
+            "rdfs:label": "a space launch that took place in the past",
             "rdfs:comment": "a document representing a space launch taken from wikipedia page"
         },
         {
             "@id": "http://pramantha.eu/ontology/mission",
             "@type": "http://www.w3.org/2002/07/owl#Class",
+            "owl:sameAs": "http://dbpedia.org/ontology/SpaceMission",
             "rdfs:label": "a space mission",
             "rdfs:comment": "a document representing a space mission from Chronos legacy"
         },
         {
             "@id": "http://pramantha.eu/ontology/event",
             "@type": "http://www.w3.org/2002/07/owl#Class",
+            "owl:sameAs": "http://umbel.org/umbel/rc/Event",
             "rdfs:label": "an event or happening related with a space mission",
             "rdfs:comment": "a document representing an event or happening from Chronos legacy"
         },
@@ -108,34 +111,6 @@
             "@type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#PlainLiteral",
             "rdfs:label": "can be queried as a member of this group",
             "rdfs:comment": "a string assigning the document to a set or a Class in the datastore, useful for fast querying"
-        },
-        {
-            "@id": "http://pramantha.eu/ontology/space/CelestialBody",
-            "owl:sameAs": "http://dbpedia.org/ontology/CelestialBody",
-            "@type": "http://www.w3.org/2002/07/owl#Class",
-            "rdfs:label": "a celestial body",
-            "rdfs:comment": "a document representing a generic celestial body"
-        },
-        {
-            "@id": "http://pramantha.eu/ontology/space/Planet",
-            "owl:sameAs" : "http://dbpedia.org/ontology/Planet",
-            "@type": "http://dbpedia.org/ontology/CelestialBody",
-            "rdfs:label": "a planet",
-            "rdfs:comment": "a document representing a planet"
-        },
-        {
-            "@id": "http://pramantha.eu/ontology/space/Satellite",
-            "owl:sameAs": "http://dbpedia.org/ontology/Satellite",
-            "@type": "http://dbpedia.org/ontology/CelestialBody",
-            "rdfs:label": "a natural satellite",
-            "rdfs:comment": "a document representing a natural satellite"
-        },
-        {
-            "@id": "http://pramantha.eu/ontology/space/Asteroid",
-            "owl:sameAs": "http://dbpedia.org/ontology/Asteroid",
-            "@type": "http://dbpedia.org/ontology/CelestialBody",
-            "rdfs:label": "an asteroid",
-            "rdfs:comment": "a document representing an asteroid"
         }
     ]
 

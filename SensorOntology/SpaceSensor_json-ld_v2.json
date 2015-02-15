@@ -39,7 +39,7 @@
 
                         "rdfs:comment"    : "1) [Detector detects some PhysicalEntity] : Detectors are described as objects detecting some physical entity: elementary particles, light, atoms, cosimc dust, etc.  2) [Detector measures some PhysicalQuantity] : Detection of any physical entity entails that some physical quantity of the detected particle is measured: mass, charge, spin, velocity,... 3) [Detector hasWorkingPrinciple some DetectorWorkingPrinciple] : Detection is possible due to physical principles exploited ad hoc. For example, ionisation of charged particles within a solid state detector, used as a reversely biased diode, or electron emission due to the photoelectric effect. 4) [Detector hasOutput some PhysicalQuantity] : Detectors produce as output some physical quantity, most usually time-varying voltages, which are then read by the the readout electronics.",
                         "rdfs:label"      : "Detector",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Sensor"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Sensor"
                     },
                     {
                         "@id"           : "http://pramantha.eu/ontology/sensors/detects",
@@ -405,21 +405,21 @@
                         "@type"        : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:comment" : "I copied and pasted this class and its subclasses from some image file (.png) of an ontology which I cannot find again. It is important to find it again to give credits.",
                         "rdfs:label"   : "EMSpectrum",
-                        "owl:sameAs"   : "http://pramantha.eu/dbpediadocs/Electromagnetic_spectrum"
+                        "owl:sameAs"   : "http://dbpedia.org/resource/Electromagnetic_spectrum"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/EarthObservation",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/FieldOfResearch",
                         "rdfs:label"      : "EarthObservation",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Earth_observation"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Earth_observation"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/ElectricCharge",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "ElectricCharge",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Electric_charge"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Electric_charge"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/ElectricCurrent",
@@ -438,7 +438,7 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "ElectricPotential",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Electric_potential"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Electric_potential"
 
                     },
                     {
@@ -446,21 +446,21 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "ElectricalResistance",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Electrical_resistance_and_conductance"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Electrical_resistance_and_conductance"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Energy",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Energy",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Energy"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Energy"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/EnergyDensity",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "EnergyDensity",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Energy_density"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Energy_density"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/ExtremeUltraViolet",
@@ -486,28 +486,28 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Force",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Force"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Force"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Frequency",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Frequency",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Frequency"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Frequency"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/GammaRays",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/EMSpectrum",
                         "rdfs:label"      : "GammaRays",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Gamma_ray"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Gamma_ray"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Heat",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Heat",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Heat"
+                        "owl:sameAs"      : "http://dbpedia.org/resource//Heat"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Impulse",
@@ -526,7 +526,7 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/EMSpectrum",
                         "rdfs:label"      : "Infrared",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Infrared"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Infrared"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/InfraredRadiometer",
@@ -539,7 +539,7 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Length",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Length_measurement"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Length_measurement"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/LuminousIntensity",
@@ -570,14 +570,14 @@
                                                 }
                                             ],
                         "rdfs:label"      : "Magnetometer",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Magnetometer"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Magnetometer"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Mass",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Mass",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Mass"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Mass"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/MeanLifeTime",
@@ -590,7 +590,7 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalEntity",
                         "rdfs:label"      : "Molecule",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Molecule"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Molecule"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/NearInfrared",
@@ -609,7 +609,7 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalEntity",
                         "rdfs:label"      : "Particle",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Subatomic_particle"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Subatomic_particle"
                     },
                     {
                         "@id"                 : "http://pramantha.eu/ontology/sensors/PassiveInstrument",
@@ -651,21 +651,21 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalEntity",
                         "rdfs:label"      : "Plasma",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Plasma_(physics)"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Plasma_(physics)"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Power",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Power",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Power_(physics)"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Power_(physics)"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Pressure",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Pressure",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Pressure"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Pressure"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Radio",
@@ -703,7 +703,7 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/OpticalInstrument",
                         "rdfs:label"      : "Radiometer",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Radiometer"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Radiometer"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Red",
@@ -715,7 +715,7 @@
                         "@id"                 : "http://pramantha.eu/ontology/sensors/RemoteSensingInstrument",
                         "@type"               : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:label"          : "RemoteSensingInstrument",
-                        "owl:sameAs"          : "http://pramantha.eu/dbpediadocs/Remote_sensing",
+                        "owl:sameAs"          : "http://dbpedia.org/resource/Remote_sensing",
                         "owl:equivalentClass" : {
                                                     "@type" : "http://www.w3.org/2002/07/owl#Class",
                                                     "owl:intersectionOf" : [
@@ -731,7 +731,7 @@
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/SolarSystem",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Solar_System",
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Solar_System",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/FieldOfResearch",
                         "rdfs:label"      : "SolarSystem"
@@ -741,14 +741,14 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/SpectroscopicInstrument",
                         "rdfs:label"      : "Spectograph",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Spectrograph"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Spectrograph"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Spectrometer",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/SpectroscopicInstrument",
                         "rdfs:label"      : "Spectrometer",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Spectrometer"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Spectrometer"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/SpectroscopicInstrument",
@@ -757,18 +757,18 @@
                         "rdfs:label"      : "SpectroscopicInstrument"
                     },
                     {
-                        "@id"             : "http://pramantha.eu/ontology/sensors/Spin",
+                        "@id"             : "http://pramantha.eu/ontology/sensors/Spin_(physics)",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
-                        "rdfs:label"      : "Spin",
-                        "owl:sameAs"      : "http://pramantha.eu/dbpediadocs/Spin_(physics)"
+                        "rdfs:label"      : "Spin_(physics)",
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Spin_(physics)"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Temperature",
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Temperature",
-                        "rdfs:sameAs"     : "http://pramantha.eu/dbpediadocs/Temperature"
+                        "owl:sameAs"     : "http://dbpedia.org/resource/Temperature"
 
                     },
                     {
