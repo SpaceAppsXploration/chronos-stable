@@ -1,11 +1,10 @@
 from pprint import pprint
 
-from main.mongod import get_connection
-from datastoreapi.buildDatastore import Build
-from datastoreapi.Wrapper import DocumentExists, DocumentExistNot
+from datastoreapi.datastoreErrors import DocumentExists, DocumentExistNot
+from datastoreapi.wrapper import *
 
 
-class SKOSconcepts(Build):
+class SKOSconcepts():
     """
     Collection of methods to process and store the JPL's NASA-STI XML-SKOS file
 
@@ -18,10 +17,10 @@ class SKOSconcepts(Build):
     :method store_narrower: check and store a skos:narrower link into a skos:Concept document in the cloud
     """
     def __init__(self):
-        super().__init__(mongod=get_connection())
-        self.db = self.mongod
+        self.connection = Wrapper()
+        self.db = self.connection.return_connection()
         self.provider = self.db.base.find_one({
-            "@id": self.PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
+            "@id": PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
     def find_or_create_scheme(self, at_id, scheme):

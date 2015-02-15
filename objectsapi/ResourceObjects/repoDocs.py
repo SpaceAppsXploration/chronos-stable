@@ -1,24 +1,26 @@
 from pprint import pprint
 from pymongo.errors import DuplicateKeyError, DocumentTooLarge
 
-from main.mongod import get_connection
+from datastoreapi.wrapper import *
 from datastoreapi.buildDatastore import Build
 from datastoreapi.datastoreErrors import DocumentExists
-from datastoreapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
-from datastoreapi.basicDocs import BasicDoc
+from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
+from objectsapi.basicDocs import BasicDoc
 from tagmeapi.tagMeService import TagMeService
 from toolbox.tools import retrieve_from_sparql
+from toolbox.pediacache import DBpediaCache
 
 
-class PublicRepoDocument(Build):
-    def __init__(self, dbpedia=None, freebase=None,  abstract=None):
-        super().__init__(mongod=get_connection())
-        self.db = self.mongod
-        self.dbpedia = dbpedia  # url of dbpedia jsond
+class PublicRepoDocument():
+    def __init__(self, dbpedia=None, freebase=None, abstract=None):
+        self.connection = Wrapper()
+        self.db = self.connection.return_connection()
+        self.dbpedia = dbpedia  # url of dbpedia jsond or xml
         self.freebase = freebase  # url of freebase doc
         self.abstract = abstract  # optional abstract
 
         self.concept_utilities = SKOSconcepts()  # instance of the concept utilities
+
 
     def store_wiki_resource(self):
         """
@@ -43,17 +45,20 @@ class PublicRepoDocument(Build):
             "Canadian drama television series", "State_routes_in_Oregon"
 
         ]
+        from toolbox import tools
 
-        if self.dbpedia is not None:  # dbpedia resource only
-            i = self.dbpedia.rfind('/data/')
-            label = self.dbpedia[i + 6:-6]
-            sparql = self.DBPEDIA_SPQL % label
+        if self.dbpedia is not None:
+            label = tools.from_dbpedia_url_return_slug(self.dbpedia)
+            sparql = DBPEDIA_RESOURCE % label
 
-            url = self.PRAMANTHA_URL % ("dbpediadocs", label)
-            if self.db.base.find_one({"@id": url}) is None:
+            url = PRAMANTHA_URL % ("dbpediadocs", label)
+            check = self.db.base.find_one({"@id": url})
+            if not check:
                 pprint("Storing Resource:" + url)
 
-                doc = BasicDoc.blank_dbpediadoc()
+                new = BasicDoc()
+                doc = new.blank_dbpediadoc()
+                del new
                 doc["@id"] = url
                 doc["skos:altLabel"] = label
                 doc["owl:sameAs"][0]["@value"] = self.dbpedia
@@ -84,18 +89,13 @@ class PublicRepoDocument(Build):
 
                 # insert cache
                 try:
-                    cache = dict()
-                    cache['body'] = str(retrieve_from_sparql(sparql))
-                    cache['@id'] = url
+                    new = DBpediaCache()
+                    res = new.get_or_retrieve_and_store(label)
+                    pprint(res)
+                    del new
                 except Exception as e:
                     print("URL " + str(sparql))
                     raise Exception(e)
-
-                try:
-                    self.mongod.DBpediacache.insert(cache)
-                    print("DBPEDIA CACHE INSERTED <<<<<<<<<<<<<<<")
-                except (DuplicateKeyError, DocumentTooLarge):
-                    pass
 
                 return this_doc
             else:

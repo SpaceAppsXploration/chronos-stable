@@ -1,9 +1,11 @@
-__author__ = 'lorenzo'
+#
+# A basic API to query TagMe RESTful services
+#
 
+__author__ = 'lorenzo'
 
 from urllib.parse import quote, urlencode, quote_plus
 import requests
-import re
 import time
 from pprint import pprint
 
@@ -47,7 +49,7 @@ class TagMeService:
         url = endpoint + '?' + urlencode(params)
         try:
             answer = json.loads(requests.get(url).text)
-        except Exception:
+        except (Exception, UnicodeDecodeError):
             print(">>>>>>>>>>>>>>>>> ERROR >>>>>>>>>>", text)
             return {"spotted": False, "value": None}
 
@@ -65,9 +67,8 @@ class TagMeService:
         :param term: the text to analyze as a byte (b'string')
         :return: dictionary with loaded JSON from response
         """
-        import simplejson as json
         endpoint = "http://tagme.di.unipi.it/tag"
-        #print(term)
+        # print(term)
         if str(term) == 'None':
             return {"timestamp": time.time(), "time": 0, "api": "tag", "annotations": [], "lang": "en"}
         params = {
@@ -80,18 +81,18 @@ class TagMeService:
         if method == 'GET':
             url = endpoint + '?' + urlencode(params)
             data = None
-        #print(url)
+        # print(url)
         elif method == 'POST':
             url = endpoint
             data = params
         else:
             raise BadRequest('retrieve_taggings(): Wrong HTTP Verb')
 
-        results = None
+        results = {"timestamp": time.time(), "time": 0, "api": "tag", "annotations": [], "lang": "en"}
         try:
             results = retrieve_json(url, method=method, data=data)
-        except (Exception, ValueError) as a:
-            return {"timestamp": time.time(), "time": 0, "api": "tag", "annotations": [], "lang": "en"}
+        except (Exception, ValueError):
+            return results
 
         if "errors" not in results.keys() or results["errors"] == 0:
             return results
@@ -140,7 +141,7 @@ class TagMeService:
         try:
             results = retrieve_json(url)
             pprint(results)
-        except (Exception, ValueError) as a:
+        except (Exception, ValueError):
             raise BadRequest('Error in connection or in JSON parsing the response from TagMe Relating API')
 
         if results["errors"] == 0:

@@ -15,11 +15,10 @@ __author__ = 'lorenzo'
 from datastoreapi.wrapper import *
 
 
-class BasicDoc(Wrapper):
-    def __init__(self, unittest=False):
-        super().__init__(unittest=unittest)
+class BasicDoc():
 
-    def blank_dbpediadoc(self):
+    @staticmethod
+    def blank_dbpediadoc():
         """
         This the base doc for the DBPEDIADOCS group. They save locally the reference
         to a term that is in DBpedia/Wikipedia
@@ -27,11 +26,11 @@ class BasicDoc(Wrapper):
         """
         return {
             "@id": None,
-            "@type": self.PRAMANTHA_URL % ("ontology", "dbpediadoc"),
+            "@type": PRAMANTHA_URL % ("ontology", "dbpediadoc"),
             "@language": "en",
             "schema:provider": [dict({
                 "@value": "http://dbpedia.org/data/DBpedia.jsond",
-                "@type": self.RDF_RESOURCE
+                "@type": RDF_RESOURCE
             })],
             "chronos:group": "dbpediadocs",
             "chronos:dbpediaCategories": [],
@@ -48,19 +47,20 @@ class BasicDoc(Wrapper):
             "owl:sameAs": [
                 {
                     "@value": None,                                  # slot [0] for dbpedia resource in jsond format
-                    "@type": self.RDF_RESOURCE,
+                    "@type": RDF_RESOURCE,
                     "rdfs:comment": "this link can be used as it is to retrieve in JSOND (ODATA) format"
                 },
                 {
                     "@value": None,                                  # slot [1] for XML resource,
-                    "@type": self.RDF_RESOURCE,                       # see the tools. retrieve_from_sparql(url) method
+                    "@type": RDF_RESOURCE,                       # see the tools. retrieve_from_sparql(url) method
                     "rdfs:comment": "this link supply an XML, but it can be used in a SPARQL \
-                                     query to DBpedia to request a JSON-LD or do the request through ChronosAPIs' cache"
+                    query to DBpedia to request a JSON-LD or do the request through ChronosAPIs' cache"
                 }
             ]
         }
 
-    def blank_mission(self):
+    @staticmethod
+    def blank_mission():
         """
         This the base doc for the MISSIONS group. They save locally the data about a mission or a launch.
         it links to DBpedia term with the "owl:sameAs" property.
@@ -69,7 +69,7 @@ class BasicDoc(Wrapper):
         return {
             "@id": None,                                             # 'subject' of the RDF triple: in this doc CHRONOS_URL % ("missions", <slug>)
             "skos:prefLabel": None,                                  # full name of mission: "Apollo 11"
-            "@type": self.PRAMANTHA_URL % ("ontology", "mission"),      # type of the document, in this case chronos:mission
+            "@type": PRAMANTHA_URL % ("ontology", "mission"),      # type of the document, in this case chronos:mission
             "rdf:type": [],                                          # rdf types as found in wikipedia
             "chronos:slug": None,                                    # if mission in wikipedia, this is the wikipedia title. Else is None
             "chronos:missionEra": None,                              # string: present, apst, future, concept
@@ -89,7 +89,8 @@ class BasicDoc(Wrapper):
 
         }
 
-    def blank_launch(self):
+    @staticmethod
+    def blank_launch():
         """
         Launches are joined to missions in the MISSIONS group. They save locally the data about a mission or a launch.
         it links to DBpedia term with the "owl:sameAs" property.
@@ -98,7 +99,7 @@ class BasicDoc(Wrapper):
         return {
             "@id": None,
             "skos:prefLabel": None,
-            "@type": self.PRAMANTHA_URL % ("ontology", "launch"),
+            "@type": PRAMANTHA_URL % ("ontology", "launch"),
             "rdf:type": [],
             "chronos:year": None,
             "chronos:slug": None,
@@ -111,7 +112,8 @@ class BasicDoc(Wrapper):
 
         }
 
-    def blank_target(self):
+    @staticmethod
+    def blank_target():
         """
         This the base doc for the TARGETS group. They save locally the data about a celestial body.
         it links to DBpedia term with the "owl:sameAs" property.
@@ -123,15 +125,15 @@ class BasicDoc(Wrapper):
             "@language": "en",
             "owl:sameAs": [{
                 "@value": None,
-                "@type": self.RDF_RESOURCE,                           # OData resource .jsond
+                "@type": RDF_RESOURCE,                           # OData resource .jsond
                 "schema:provider": {
                     "@value": "http://dbpedia.org/resource/DBpedia",
-                    "@type": self.RDF_RESOURCE
+                    "@type": RDF_RESOURCE
                     }
                 },
                 {
                     "@value": None,                                  # XML resource usable for sparql querying the json-ld
-                    "@type": self.RDF_RESOURCE
+                    "@type": RDF_RESOURCE
                 }
             ],
             "skos:prefLabel": None,                                  # name of the body. "targets" have NO altLabel!
@@ -156,28 +158,30 @@ class BasicDoc(Wrapper):
             },
             "chronos:useInSim": {
                 "@value": None,
-                "@type": self.RDF_PLAIN_LITERAL
+                "@type": RDF_PLAIN_LITERAL
             },
         }
 
-    def blank_division_collection(self):
+    @staticmethod
+    def blank_division_collection():
         return {
             "@language": "en",
-            "@type": self.SKOS_COLLECTION,
+            "@type": SKOS_COLLECTION,
             "schema:provider": {},
             "@id": "_:allDivisions",
             "skos:prefLabel": "divisions collection",
             "skos:scopeNote": {
                 "@value": "Collection of Divisions Concepts",
-                "@type": self.RDF_PLAIN_LITERAL
+                "@type": RDF_PLAIN_LITERAL
             },
             "skos:memberList": []
         }
 
-    def blank_division(self):
+    @staticmethod
+    def blank_division():
         return {
             "@language": "en",
-            "@type": self.SKOS_CONCEPT,
+            "@type": SKOS_CONCEPT,
             "schema:provider": {},
             "@id": None,
             "skos:prefLabel": None,
@@ -185,30 +189,32 @@ class BasicDoc(Wrapper):
             "chronos:group": "divisions",
             "skos:scopeNote": [dict({
                 "@value": None,
-                "@type": self.RDF_PLAIN_LITERAL
+                "@type": RDF_PLAIN_LITERAL
             })],
             "owl:sameAs": [],
             "skos:narrower": [],
             "skos:broader": {}
         }
 
-    def blank_subject_collection(self):
+    @staticmethod
+    def blank_subject_collection():
         return {
             "@language": "en",
-            "@type": self.SKOS_COLLECTION,
+            "@type": SKOS_COLLECTION,
             "schema:provider": {},
             "@id": "_:allSubj",
             "skos:prefLabel": "subjects collection",
             "skos:scopeNote": {
                 "@value": "Collection of Subjects TopConcepts from subjects' schemes",
-                "@type": self.RDF_PLAIN_LITERAL
+                "@type": RDF_PLAIN_LITERAL
             }, "skos:memberList": []
         }
 
-    def blank_subject_scheme(self):
+    @staticmethod
+    def blank_subject_scheme():
         return {
             "@language": "en",
-            "@type": self.SKOS_SCHEME,
+            "@type": SKOS_SCHEME,
             "schema:provider": {},
             "@id": None,
             "skos:prefLabel": None,
@@ -216,15 +222,16 @@ class BasicDoc(Wrapper):
             "chronos:group": "schemes",
             "skos:scopeNote": {
                 "@value": "subject's scheme where keywords are aggregated",
-                "@type": self.RDF_PLAIN_LITERAL
+                "@type": RDF_PLAIN_LITERAL
             },
             "skos:hasTopConcept": {}
         }
 
-    def blank_subject_as_top_concept(self):
+    @staticmethod
+    def blank_subject_as_top_concept():
         return {
             "@language": "en",
-            "@type": self.SKOS_CONCEPT,
+            "@type": SKOS_CONCEPT,
             "schema:provider": {},
             "@id": None,
             "skos:prefLabel": None,
@@ -232,14 +239,15 @@ class BasicDoc(Wrapper):
             "chronos:group": "subjects",
             "skos:scopeNote": {
                 "@value": "",
-                "@type": self.RDF_PLAIN_LITERAL
+                "@type": RDF_PLAIN_LITERAL
             },
             "skos:topConceptOf": {},
             "owl:sameAs": [],  # link to DBpedia term
             "skos:broader": {}  # link to division
         }
 
-    def blank_keyword(self):
+    @staticmethod
+    def blank_keyword():
         """
         This the base doc for the KEYWORDS group. They save locally the data about NASA's SKOS-XML keyword.
         dbpediadocs and missions refer to them with the "chronos:relKeyword" property
@@ -247,7 +255,7 @@ class BasicDoc(Wrapper):
         """
         return {
             "@language": "en",
-            "@type": self.PRAMANTHA_URL % ("ontology", "keyword"),
+            "@type": PRAMANTHA_URL % ("ontology", "keyword"),
             "schema:provider": {},
             "chronos:group": "keywords",
             "skos:prefLabel": None,  # full keyword with parenthesis and commas
@@ -259,7 +267,8 @@ class BasicDoc(Wrapper):
             "skos:scopeNote": []
         }
 
-    def blank_webpage(self):
+    @staticmethod
+    def blank_webpage():
         """
         This the base doc for the URLS group. They save locally the data about a crawled url.
         It links to keywords with the "schema:about" property, and to missions with the "chronos:relMission" property.
@@ -268,7 +277,7 @@ class BasicDoc(Wrapper):
         return {
             "@id": None,
             "chronos:base64": None,
-            "@type": self.PRAMANTHA_URL % ("ontology", "webpage"),
+            "@type": PRAMANTHA_URL % ("ontology", "webpage"),
             "schema:url": {
                 "@value": None,
                 "@type": "https://schema.org/URL"
@@ -278,11 +287,11 @@ class BasicDoc(Wrapper):
             "@language": "en",
             "schema:publisher": {
                 "@value": None,
-                "@type": self.RDF_RESOURCE
+                "@type": RDF_RESOURCE
             },
             "schema:provider": {
                 "@value": None,
-                "@type": self.RDF_RESOURCE
+                "@type": RDF_RESOURCE
             },
             "schema:headline": {
                 "@value": None,
@@ -298,10 +307,11 @@ class BasicDoc(Wrapper):
 
         }
 
-    def blank_event(self):
+    @staticmethod
+    def blank_event():
         return {
             "@id": None,
-            "@type": self.PRAMANTHA_URL % ("ontology", "event"),
+            "@type": PRAMANTHA_URL % ("ontology", "event"),
             "chronos:group": "events",
             "chronos:eventContent": None,
             "chronos:eventdate": None,
