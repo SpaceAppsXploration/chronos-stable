@@ -507,7 +507,7 @@
                         "@type"           : "http://www.w3.org/2002/07/owl#Class",
                         "rdfs:subClassOf" : "http://pramantha.eu/ontology/sensors/PhysicalQuantity",
                         "rdfs:label"      : "Heat",
-                        "owl:sameAs"      : "http://dbpedia.org/resource//Heat"
+                        "owl:sameAs"      : "http://dbpedia.org/resource/Heat"
                     },
                     {
                         "@id"             : "http://pramantha.eu/ontology/sensors/Impulse",

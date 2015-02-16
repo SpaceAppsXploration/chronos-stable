@@ -22,7 +22,7 @@ class Test(unittest.TestCase):
 
     def test_get_or_retrieve_and_store(self):
         # tests variables
-        w = DBpediaCache(unittest=True)
+        w = DBpediaCache()
         a = w.get_or_retrieve_and_store(self.title_slug0)
         #b = pediacache.get_or_retrieve_and_store(self.mongo, self.buggy)
         c = w.get_or_retrieve_and_store(self.title_slug1)
@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
         pprint(c)
 
     def test_surfing_get_body_text_from_dbpedia_json(self):
-        j = JsonLD(unittest=True)
+        j = JsonLD()
         text2 = j.get_body_text_from_dbpedia_json(self.dbpedia_url2)
         text1 = j.get_body_text_from_dbpedia_json(self.dbpedia_url1)
 

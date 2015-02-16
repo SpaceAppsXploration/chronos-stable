@@ -94,13 +94,6 @@ class Test(unittest.TestCase):
     def test_get_resource_url_from_jsond_url(self):
         print(tools.get_resource_url_from_jsond_url(self.dbpedia_url))
 
-    def test_get_body_text_from_dbpedia_json(self):
-        a = get_body_text_from_dbpedia_json(self.dbpedia_url)
-        b = get_body_text_from_dbpedia_json(self.dbpedia_url2)
-
-        pprint(a)
-        pprint(b)
-
     def test_retrieve_umbel_res(self):
         res = tools.retrieve("http://umbel.org/umbel/rc/Meteoroid")
         pprint(res)

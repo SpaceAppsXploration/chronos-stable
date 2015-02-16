@@ -9,6 +9,5 @@ import unittest
 
 
 class Test(unittest.TestCase):
-    w = Wrapper(unittest=True)
+    w = Wrapper()
     print(w.return_connection())
-    print(w.return_client())
