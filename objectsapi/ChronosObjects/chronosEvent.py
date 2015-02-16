@@ -5,12 +5,12 @@ Base Class to create an instance of type ChronosEvent
 and store it into the MongoDB instance
 """
 
-from main.mongod import get_connection
-from datastoreapi.buildDatastore import Build
 from base64 import b64encode
 from bson.objectid import ObjectId
 
-from datastoreapi.basicDocs import BasicDoc
+from datastoreapi.wrapper import *
+from datastoreapi.datastoreErrors import DocumentExistNot
+from objectsapi.basicDocs import BasicDoc
 
 avoid = '_-'.encode(encoding='UTF-8')
 exceptions = {"ARTEMIS": "THEMIS", "MAFL": "Astrobiology_Field_Laboratory", "Sputnik": "Sputnik_1",
@@ -21,10 +21,10 @@ exceptions = {"ARTEMIS": "THEMIS", "MAFL": "Astrobiology_Field_Laboratory", "Spu
               "Mariner 6": "Mariner_6_and_7", "KAGUYA": "SELenological and ENgineering Explorer KAGUYA \(SELENE\)"}
 
 
-class CHRONOSEvent(Build):
+class CHRONOSEvent:
     def __init__(self, old_id, obj):
-        super().__init__(mongod=get_connection())
-        self.db = self.mongod
+        self.connection = Wrapper()
+        self.db = self.connection.return_connection()
         self.js_obj = obj
         self.old_id = old_id
 
@@ -52,7 +52,7 @@ class CHRONOSEvent(Build):
     
         for e in self.js_obj:
             hashed = b64encode(str(e["mission"]+str(e["id"])).encode(encoding='UTF-8'), avoid).decode(encoding='UTF-8')
-            this_id = self.PRAMANTHA_URL % ("events", hashed)
+            this_id = PRAMANTHA_URL % ("events", hashed)
 
             # basic event document
             event = BasicDoc.blank_event()
@@ -80,6 +80,6 @@ class CHRONOSEvent(Build):
                 id_ = self.db.base.insert(event)
                 this_doc = self.db.base.find_one({"_id": ObjectId(id_)})
                 if mssn is not None:
-                    self.append_link_to_mongodoc(this_doc, "chronos:relMission", mssn, "base")
+                    self.connection.append_link_to_mongodoc(this_doc, "chronos:relMission", mssn, "base")
                 else:
-                    raise Exception("EVENTS API: This mission is not in the DB")
+                    raise DocumentExistNot("EVENTS API: This mission is not in the DB")

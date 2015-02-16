@@ -1,3 +1,8 @@
+#
+# This Module has the Wrapper class, it contains the connection handler.
+# And a lot of VARIABLES useful all over the rest of the script
+#
+
 __author__ = 'Lorenzo'
 
 from pymongo import MongoClient
@@ -11,7 +16,7 @@ class Wrapper(object):
     This is the class that wraps the connection, Wrapper instance or any of its children has to be called to get connection
     ----------------------------------------------------------------------
 
-    :method return_connection:
+    :method return_connection: return to other classes and scripts the connection to Mongo
     """
 
     __client = None
@@ -39,7 +44,7 @@ class Wrapper(object):
 
         raise ConnectionFailure("MongoDB is not up")
 
-    def return_client(self):
+    def __return_client(self):
         if self.__client is not None:
             return self.__client
 

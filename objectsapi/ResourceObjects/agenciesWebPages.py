@@ -1,30 +1,29 @@
-from datastoreapi.buildDatastore import Build
-from main.mongod import get_connection
+from datastoreapi.wrapper import *
 from toolbox import tools
 from datastoreapi.datastoreErrors import DocumentExists
-from datastoreapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
+from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 
-from datastoreapi.basicDocs import BasicDoc
+from objectsapi.basicDocs import BasicDoc
 
 agencies = ["NASA", "JAXA", "European Space Agency"]
 
 
-class CrawlSearchEngine(Build):
+class CrawlSearchEngine:
     """
     Crawl links directly to Agencies website or through search engines' API
     """
     def __init__(self):
-        super().__init__(mongod=get_connection())
-        self.db = self.mongod
+        self.connection = Wrapper()
+        self.db = self.connection.return_connection()
 
-    def start_loops(self):
+    def start_loops(self, test):
         ### import scraping lib from local directory
         import scraping.agenciesScraperUtils as Scraping
 
         def nasa_crawling():
             ### loop for NASA search
             cursor = self.db.base.find({"chronos:group": "keywords"}, timeout=False)
-            for doc in cursor:
+            for i, doc in enumerate(cursor):
                 key = doc['skos:prefLabel']
                 for keyword in doc['chronos:toSearch']:
                     url = Scraping.generate_nasa_url(keyword)
@@ -34,6 +33,8 @@ class CrawlSearchEngine(Build):
                         print(ConnectionError("retrieve() raises and error: " + str(e)))
                         return None
                     Scraping.store_to_cache_collection(key, keyword, html, "NASA", self.db)
+                if test and i > 35:
+                    break
             print("NASA crawling finished")
             cursor.close()
             return None
@@ -41,7 +42,7 @@ class CrawlSearchEngine(Build):
         def esa_crawling():
             ### loop for ESA search
             cursor = self.db.base.find({"chronos:group": "keywords"}, timeout=False)
-            for doc in cursor:
+            for i, doc in enumerate(cursor):
                 key = doc['skos:prefLabel']
                 for keyword in doc['chronos:toSearch']:
                     url = Scraping.generate_esa_url(keyword)
@@ -51,6 +52,8 @@ class CrawlSearchEngine(Build):
                         print(ConnectionError("retrieve() raises and error: " + str(e)))
                         return None
                     Scraping.store_to_cache_collection(key, keyword, html, "ESA", self.db)
+                if test and i > 35:
+                    break
             print("ESA crawling finished")
             cursor.close()
             return None
@@ -58,12 +61,14 @@ class CrawlSearchEngine(Build):
         def jaxa_crawling():
             ### loop for JAXA search
             cursor = self.db.base.find({"chronos:group": "keywords"}, timeout=False)
-            for doc in cursor:
+            for i, doc in enumerate(cursor):
                 key = doc['skos:prefLabel']
                 for keyword in doc['chronos:toSearch']:
                     url = Scraping.generate_jaxa_url(keyword)
                     html = Scraping.retrieve_webdriver(url)
                     Scraping.store_to_cache_collection(key, keyword, html, "JAXA", self.db)
+                if test and i > 35:
+                    break
             print("JAXA crawling finished")
             cursor.close()
             return None
@@ -77,13 +82,13 @@ class CrawlSearchEngine(Build):
         return None
 
 
-class WebPages(Build):
+class WebPages:
     """
     Store webpages data from static files or from cache
     """
     def __init__(self, cache_obj=None, publisher=None, obj=None):
-        super().__init__(mongod=get_connection())
-        self.db = self.mongod
+        self.connection = Wrapper()
+        self.db = self.connection.return_connection()
         self.cache_obj = cache_obj  # used to store from cache, if None store from static files
         self.obj = obj
 
@@ -98,7 +103,7 @@ class WebPages(Build):
         from base64 import b64encode, b64decode
 
         from tagmeapi.tagMeService import TagMeService
-        from datastoreapi.ResourceObjects.repoDocs import PublicRepoDocument
+        from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
 
         mission = None
         if self.obj is not None:
@@ -121,7 +126,7 @@ class WebPages(Build):
                 avoid = '_-'.encode(encoding='UTF-8')
                 hashed = b64encode(to_hash, avoid).decode(encoding='UTF-8')
 
-            obj_id = self.PRAMANTHA_URL % ("urls", hashed)
+            obj_id = PRAMANTHA_URL % ("urls", hashed)
 
             if self.db.urls.find_one({"@id": obj_id}) is not None:
                 return
@@ -147,13 +152,13 @@ class WebPages(Build):
 
             if self.obj is not None:
                 kwd = self.db.base.find_one({
-                    "@id": self.PRAMANTHA_URL % ("keywords", self.obj["keyword"].lower().replace(' ', '+'))})
+                    "@id": PRAMANTHA_URL % ("keywords", self.obj["keyword"].lower().replace(' ', '+'))})
             else:
                 kwd = self.db.base.find_one({
-                    "@id": self.PRAMANTHA_URL % ("keywords", single_keyword)})
+                    "@id": PRAMANTHA_URL % ("keywords", single_keyword)})
             if kwd is not None:
                 try:
-                    self.append_link_to_mongodoc(url_doc, "schema:about", kwd, "webpages")
+                    self.connection.append_link_to_mongodoc(url_doc, "schema:about", kwd, "webpages")
                     print("FIRST TRY: STORING Keyword Related in URLS and KWD: " + url_doc["@id"])
                 except DocumentExists:
                     pass
@@ -186,8 +191,8 @@ class WebPages(Build):
                         return
                     # for a in annotations: retrieve or store wiki doc
                     for a in results:
-                        dbpedia = self.DBPEDIA_URL % a['title'].replace(' ', '_')
-                        chronos_id = self.PRAMANTHA_URL % ("dbpediadocs", a['title'].replace(' ', '_'))
+                        dbpedia = DBPEDIA_URL % a['title'].replace(' ', '_')
+                        chronos_id = PRAMANTHA_URL % ("dbpediadocs", a['title'].replace(' ', '_'))
                         new = PublicRepoDocument(dbpedia=dbpedia)
                         try:
                             new_doc = new.store_wiki_resource()
@@ -204,7 +209,7 @@ class WebPages(Build):
                             for n in new_doc["chronos:relKeyword"]:
                                 # if wiki doc is linked to a keyword: store link URL_doc > keyword
                                 try:
-                                    self.append_link_to_mongodoc(url_doc, "schema:about", n, "webpages")
+                                    self.connection.append_link_to_mongodoc(url_doc, "schema:about", n, "webpages")
                                     print("Annotations store in url document")
                                 except DocumentExists:
                                     continue
@@ -220,7 +225,7 @@ class WebPages(Build):
                 if docstring.find(search) != -1:
                     t_doc = t
                     if t_doc is not None:
-                        self.append_link_to_mongodoc(url_doc, "chronos:relMission", t_doc, "webpages")
+                        self.connection.append_link_to_mongodoc(url_doc, "chronos:relMission", t_doc, "webpages")
 
             ### loop for finding the mission for chronos:mission link
             # look for all missions
@@ -229,7 +234,7 @@ class WebPages(Build):
                 # update the skos:related property
                 if qm is not None:
                     try:
-                        self.append_link_to_mongodoc(url_doc, "chronos:relMission", qm, "webpages")
+                        self.connection.append_link_to_mongodoc(url_doc, "chronos:relMission", qm, "webpages")
                     except DocumentExists:
                         pass
 

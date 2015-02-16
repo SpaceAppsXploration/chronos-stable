@@ -1,11 +1,10 @@
 __author__ = 'lorenzo'
 
-from main.mongod import get_connection
 from datastoreapi.buildDatastore import Build
 
 
 def deploy_layer_one():
-    building = Build(mongod=get_connection())
+    building = Build()
 
     building.add_targets()
 

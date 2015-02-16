@@ -91,7 +91,7 @@ class PublicRepoDocument():
                 try:
                     new = DBpediaCache()
                     res = new.get_or_retrieve_and_store(label)
-                    pprint(res)
+                    print("DOC SAVED IN CACHE <<<<<<<<<<<<<<<")
                     del new
                 except Exception as e:
                     print("URL " + str(sparql))

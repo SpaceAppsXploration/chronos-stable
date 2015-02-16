@@ -7,7 +7,7 @@ from pymongo.errors import DuplicateKeyError, DocumentTooLarge
 import toolbox.customErrors as customErrors
 
 
-class DBpediaCache():
+class DBpediaCache:
     """
     This class manages operations of storing/retrieving/fetching on the DBpediacache collection
     """

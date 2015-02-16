@@ -4,28 +4,28 @@ from bson.objectid import ObjectId
 from urllib.parse import quote, unquote
 from pprint import pprint
 
-from main.mongod import get_connection
-from datastoreapi.buildDatastore import Build
+from datastoreapi.wrapper import *
 from datastoreapi.datastoreErrors import *
-from datastoreapi.ResourceObjects.repoDocs import PublicRepoDocument
+from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
 from toolbox import tools
 from tagmeapi.tagMeService import TagMeService, ConceptNotInDBpedia, BadRequest, TextNotSpotted
 
 
-class TagMeOperation(Build):
+class TagMeOperation:
     """
     Contains methods that use TagMeService to operate on the database
     -----------------------------------------------------------------
     """
     def __init__(self):
-        super().__init__(mongod=get_connection())
+        self.connection = Wrapper()
+        self.mongod = self.connection.return_connection()
 
     def insert_sections(self):
         """
         Take the titles of general scopes and insert them as a dbpedia docs in mongo
         :return: None
         """
-        rlts = map(tools.title_to_url, TagMeService.return_gen_scopes())
+        rlts = map(tools.make_resource_url_from_slug, TagMeService.return_gen_scopes())
         print("INSERTING SECTIONS")
 
         for i, t in enumerate(rlts):
@@ -117,7 +117,7 @@ class TagMeOperation(Build):
         # take the title from the API response and get the slug
         slug = annotation["title"].replace(" ", "_")
         # dbpedia json url
-        dbpedia = tools.title_to_url(slug)
+        dbpedia = tools.make_resource_url_from_slug(slug)
 
         if slug in to_be_excluded or float(annotation["rho"]) < 0.09:
             # slug is in the set of excluded pedia terms
@@ -130,7 +130,7 @@ class TagMeOperation(Build):
             doc = to_store.store_wiki_resource()
             print("DOC STORED")
         except DocumentExists as e:
-            doc = self.mongod.base.find_one({"@id":  self.PRAMANTHA_URL % ("dbpediadocs", slug)})
+            doc = self.mongod.base.find_one({"@id": PRAMANTHA_URL % ("dbpediadocs", slug)})
             print("DOC FETCHED: " + dbpedia)
 
         pprint(doc)  #complete doc
@@ -145,7 +145,7 @@ class TagMeOperation(Build):
         pprint(kw["@id"])
         if kw is not None:
             try:
-                id_ = self.append_link_to_mongodoc(doc, "chronos:relKeyword", kw, "base")["_id"]
+                id_ = self.connection.append_link_to_mongodoc(doc, "chronos:relKeyword", kw, "base")["_id"]
             except DocumentExists:
                 id_ = doc["_id"]
         else:
@@ -194,7 +194,7 @@ class TagMeOperation(Build):
                         ):
                             check = self.mongod.base.find_one({"chronos:group": "dbpediadocs", "skos:altLabel": title})
                             if check is None:
-                                to_store = PublicRepoDocument(dbpedia=self.DBPEDIA_URL % title)
+                                to_store = PublicRepoDocument(dbpedia=DBPEDIA_URL % title)
                                 try:
                                     check = to_store.store_wiki_resource()
                                 except DocumentExists:
@@ -202,7 +202,7 @@ class TagMeOperation(Build):
 
                             if event:
                                 try:
-                                    self.append_link_to_mongodoc(check, "chronos:relEvent", doc, "base")
+                                    self.connection.append_link_to_mongodoc(check, "chronos:relEvent", doc, "base")
                                 except DocumentExists:
                                     continue
 
@@ -217,16 +217,13 @@ class TagMeOperation(Build):
                                     else:
                                         continue
                                     try:
-                                        self.append_link_to_mongodoc(check, prop, l, "base")
+                                        self.connection.append_link_to_mongodoc(check, prop, l, "base")
                                     except DocumentExists:
                                         continue
                                 continue
 
         return None
 
-
-# Due to a DBpedia server BUG, the JSON provided by DBpedia for "Sun" cannot be serialized. Using this static data
-sun_text = "The Sun is the star at the center of the Solar System. It is almost spherical and consists of hot plasma interwoven with magnetic fields.[12][13] It has a diameter of about 1,392,684 km (865,374 mi),[5] around 109 times that of Earth, and its mass (1.989×1030 kilograms, approximately 330,000 times the mass of Earth) accounts for about 99.86% of the total mass of the Solar System.[14] Chemically, about three quarters of the Sun's mass consists of hydrogen, whereas the rest is mostly helium. The remaining 1.69% (equal to 5,600 times the mass of Earth) consists of heavier elements, including oxygen, carbon, neon and iron, among others."
 
 to_be_excluded = ["Drives_(Lonnie_Smith_album)", "Internets", "Tunnels_(owarai)", "Manual_(music)",
                   "Blood_plasma", "Ambient_music", "The_Plotters", "Architecture", "2C_(psychedelics)",

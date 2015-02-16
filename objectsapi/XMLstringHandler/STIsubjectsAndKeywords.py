@@ -1,23 +1,22 @@
-"""
-Base Class to create an instance of type NASA-STI Subject from the bs4 SKOS-XML taxonomy
-and store it into the MongoDB instance
-"""
+#
+# Base Class to create an instance of type NASA-STI Subject from the bs4 SKOS-XML taxonomy
+# and store it into the MongoDB instance
+#
 
 from pprint import pprint
 
-from main.mongod import get_connection
-from datastoreapi.buildDatastore import Build
+from datastoreapi.wrapper import *
 from datastoreapi.datastoreErrors import DocumentExists
-from datastoreapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
+from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 # import blank documents
-from datastoreapi.basicDocs import BasicDoc
+from objectsapi.basicDocs import BasicDoc
 
 
-class STIsubject(Build):
+class STIsubject():
     def __init__(self, obj):
-        super().__init__(mongod=get_connection())
+        self.connection = Wrapper()
+        self.db = self.connection.return_connection()
         # html object to convert
-        self.db = self.mongod
         self.obj = obj
         self.code = str(obj.find("nt2:code").string)
         # blank subject collection
@@ -32,7 +31,7 @@ class STIsubject(Build):
         self.top_concept["chronos:code"] = self.code
 
         self.provider = self.db.base.find_one({
-            "@id": self.PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
+            "@id": PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
         self.concept_utilities = SKOSconcepts()  # instance of the concept to store into a document
@@ -66,20 +65,20 @@ class STIsubject(Build):
             # insert document
             id_ = self.db.base.insert(self.top_concept)
             this_doc = self.db.base.find_one({"_id": id_})
-            #append schema:provider
+            # append schema:provider
             try:
-                self.append_link_to_mongodoc(this_doc, "schema:provider", self.provider, "base")
+                self.connection.append_link_to_mongodoc(this_doc, "schema:provider", self.provider, "base")
             except DocumentExists:
                 pass
             # add hasTopConcept to the scheme
             try:
-                self.append_link_to_mongodoc(new_scheme, "skos:hasTopConcept", this_doc, "base")
+                self.connection.append_link_to_mongodoc(new_scheme, "skos:hasTopConcept", this_doc, "base")
             except DocumentExists:
                 pass
             # add document to subject's collection memberList
             new_collection = self.concept_utilities.find_or_create_collection("_:allSubj", self.subj_collection)
             try:
-                self.append_link_to_mongodoc(new_collection, "skos:memberList", this_doc, "base")
+                self.connection.append_link_to_mongodoc(new_collection, "skos:memberList", this_doc, "base")
             except DocumentExists:
                 pass
 
@@ -96,7 +95,6 @@ class STIsubject(Build):
 
         kw_doc["skos:prefLabel"] = keyword
         kw_doc["@id"] = this_id
-        #if len(m) == 0:
         kw_doc["chronos:toSearch"].append(label)
 
         if self.db.base.find_one({"@id": this_id}) is None:
@@ -104,8 +102,8 @@ class STIsubject(Build):
             id_ = self.db.base.insert(kw_doc)
             this_doc = self.db.base.find_one({"_id": id_})
             this_scheme = self.db.base.find_one({"@id": "_:subj" + self.code})
-            self.append_link_to_mongodoc(this_doc, "skos:inScheme", this_scheme, "base")
-            self.append_link_to_mongodoc(this_doc, "skos:exactMatch", subject_top_doc, "base")
+            self.connection.append_link_to_mongodoc(this_doc, "skos:inScheme", this_scheme, "base")
+            self.connection.append_link_to_mongodoc(this_doc, "skos:exactMatch", subject_top_doc, "base")
 
         return None
 

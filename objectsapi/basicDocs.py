@@ -29,7 +29,7 @@ class BasicDoc():
             "@type": PRAMANTHA_URL % ("ontology", "dbpediadoc"),
             "@language": "en",
             "schema:provider": [dict({
-                "@value": "http://dbpedia.org/data/DBpedia.jsond",
+                "@value": "http://dbpedia.org/resource/DBpedia",
                 "@type": RDF_RESOURCE
             })],
             "chronos:group": "dbpediadocs",

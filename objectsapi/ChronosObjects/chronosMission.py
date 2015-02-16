@@ -2,15 +2,14 @@ import time
 import json
 from pprint import pprint
 
-from main.mongod import get_connection
-from datastoreapi.buildDatastore import Build
+from datastoreapi.wrapper import *
 from toolbox import tools
 from datastoreapi.datastoreErrors import DocumentExists
-from datastoreapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
-from datastoreapi.basicDocs import BasicDoc
+from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
+from objectsapi.basicDocs import BasicDoc
 
 
-class CHRONOSmission(Build):
+class CHRONOSmission:
     """
     Take care of storing the totality of missions, merging missions from the old DB and DBpedia 'Launches' category
 
@@ -22,9 +21,9 @@ class CHRONOSmission(Build):
     :method store_hasKeyword_to_missions: loops through stored missions looking for possible links
     """
     def __init__(self, obj):
-        super().__init__(mongod=get_connection())
+        self.connection = Wrapper()
+        self.db = self.connection.return_connection()
         self.mission_obj = obj
-        self.db = self.mongod
         self.concept_utilities = SKOSconcepts()  # instance of the concept utilities
 
     def store_mission(self):
@@ -39,7 +38,9 @@ class CHRONOSmission(Build):
             # black mission document
 
         # import blank document
-        doc = BasicDoc.blank_mission()
+        new = BasicDoc()
+        doc = new.blank_mission()
+        del new
 
         # set basic keys
         doc["chronos:missionEra"] = self.mission_obj["era"]
@@ -58,17 +59,17 @@ class CHRONOSmission(Build):
 
         doc["skos:prefLabel"] = self.mission_obj["name"]
         doc["chronos:codename"] = self.mission_obj["codename"]
-        doc["@id"] = self.PRAMANTHA_URL % ("missions", label)
+        doc["@id"] = PRAMANTHA_URL % ("missions", label)
 
-        dbpedia = self.DBPEDIA_URL % label
+        dbpedia = DBPEDIA_URL % label
 
-        doc["owl:sameAs"].append({"@value": dbpedia, "@type": self.RDF_RESOURCE})
+        doc["owl:sameAs"].append({"@value": dbpedia, "@type": RDF_RESOURCE})
         xml = tools.get_resource_url_from_jsond_url(dbpedia)
-        doc["owl:sameAs"].append({"@value": xml, "@type": self.RDF_RESOURCE})
+        doc["owl:sameAs"].append({"@value": xml, "@type": RDF_RESOURCE})
 
         if self.db.base.find_one({"@id": doc["@id"]}) is None:
             pprint("STORE MISSION: " + str(self.mission_obj["name"]))
-            #print(doc)
+            # print(doc)
             id_ = self.db.base.insert(doc)
             this_doc = self.db.base.find_one({"_id": id_})
 
@@ -76,7 +77,7 @@ class CHRONOSmission(Build):
                 target = self.db.base.find_one({"skos:prefLabel": t})
                 if target is not None:
                     try:
-                        self.append_link_to_mongodoc(this_doc, "chronos:relTarget", target, "base")
+                        self.connection.append_link_to_mongodoc(this_doc, "chronos:relTarget", target, "base")
                     except DocumentExists:
                         pass
                     pprint("STORE TARGET in mission")
@@ -88,27 +89,18 @@ class CHRONOSmission(Build):
             # for m in missions: if json-url == sameAs SKIP
             # else store launch
 
-        # for each mission's page
-        #pprint("Mission: " + str(self.mission_obj))
-
         print("ADDING: LAUNCH (launch not stored yet)")
         url = self.mission_obj["json-uri"]
         instrumentation = self.mission_obj["instrumentation"]
 
         # find mission name from url
-        from urllib.parse import unquote
-        i = url.rfind('/data/')
-        if i == -1:
-            i = url.rfind('/page/')
-        label = url[i+6:-6]
-        name = unquote(label.replace('_', ' '))
-        time.sleep(0.1)
-        #pprint(name)
+        slug = tools.from_dbpedia_url_return_slug(url)
+        name = slug.replace("_", " ")
+        # pprint(name)
 
         # load res
         try:
-            res = tools.retrieve(self.mission_obj["json-uri"])
-            res = json.loads(res)  # check for types
+            res = tools.retrieve_json(self.mission_obj["json-uri"])
         except (ConnectionError, json.JSONDecoder, json.JSONEncoder):
             print("ERROR: LAUNCH >>> " + str(self.mission_obj["json-uri"]) + " >>> DBPEDIA IS PROBABLY DOWN")
             return
@@ -137,23 +129,25 @@ class CHRONOSmission(Build):
                     pprint("INSTRUMENTS ALREADY ADDED TO MISSION >>>>:" + str(check["@id"]))
                 return None
 
-        if self.db.base.find_one({"@id": self.PRAMANTHA_URL % ("missions", label)}) is None:
+        if self.db.base.find_one({"@id": PRAMANTHA_URL % ("missions", slug)}) is None:
             # create the basic document about the launch
-            doc = BasicDoc.blank_launch()
+            new = BasicDoc()
+            doc = new.blank_launch()
+            del new
 
-            doc["@id"] = self.PRAMANTHA_URL % ("missions", label)
+            doc["@id"] = PRAMANTHA_URL % ("missions", slug)
             doc["skos:prefLabel"] = name
             doc["chronos:year"] = year
-            doc["chronos:slug"] = label
+            doc["chronos:slug"] = slug
             doc["chronos:payload"] = instrumentation,
 
             # store the doc
 
             print("LAUNCH STORED: " + doc["@id"])
 
-            doc["owl:sameAs"].append({"@value": url, "@type": self.RDF_RESOURCE})
+            doc["owl:sameAs"].append({"@value": url, "@type": RDF_RESOURCE})
             xml = tools.get_resource_url_from_jsond_url(url)
-            doc["owl:sameAs"].append({"@value": xml, "@type": self.RDF_RESOURCE})
+            doc["owl:sameAs"].append({"@value": xml, "@type": RDF_RESOURCE})
             # add launch types
             for t in types:
                 doc["rdf:type"].append(t["value"])

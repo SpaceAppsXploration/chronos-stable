@@ -1,24 +1,24 @@
-"""
-Base Class to create an instance of type NASA-STI Division from the bs4 SKOS-XML taxonomy
-and store it into the MongoDB instance
-"""
+#
+# Base Class to create an instance of type NASA-STI Division from the bs4 SKOS-XML taxonomy
+# and store it into the MongoDB instance
+#
 
-from main.mongod import get_connection
-from datastoreapi.buildDatastore import Build
-from datastoreapi.Wrapper import DocumentExists
-from datastoreapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
+from datastoreapi.wrapper import *
+from datastoreapi.datastoreErrors import DocumentExists
+from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 
 
-class STIdivision(Build):
+class STIdivision():
     def __init__(self, obj):
-        super().__init__(mongod=get_connection())
+        self.connection = Wrapper()
+        self.mongod = self.connection.return_connection()
         # concept object from xml to convert
         self.obj = obj
         self.code = str(obj.find("nt2:code").string)
 
         # blank collection
         # import blank document
-        from datastoreapi.basicDocs import BasicDoc
+        from objectsapi.basicDocs import BasicDoc
 
         self.div_collection = BasicDoc.blank_division_collection()
 
@@ -26,7 +26,7 @@ class STIdivision(Build):
         self.division = BasicDoc.blank_division()
         self.division["chronos:code"] = self.code
         self.provider = self.mongod.base.find_one({
-            "@id": self.PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
+            "@id": PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
         self.concept_utilities = SKOSconcepts()  # instance of the concept to store into a document
@@ -42,13 +42,13 @@ class STIdivision(Build):
             id_ = self.mongod.base.insert(self.division)
             this_doc = self.mongod.base.find_one({"_id": id_})
             try:
-                self.append_link_to_mongodoc(this_doc, "schema:provider", self.provider, "base")
+                self.connection.append_link_to_mongodoc(this_doc, "schema:provider", self.provider, "base")
             except DocumentExists:
                 pass
 
             new_collection = self.concept_utilities.find_or_create_collection("_:allDivisions", self.div_collection)
             try:
-                self.append_link_to_mongodoc(new_collection, "skos:memberList", this_doc, "base")
+                self.connection.append_link_to_mongodoc(new_collection, "skos:memberList", this_doc, "base")
             except DocumentExists:
                 pass
 

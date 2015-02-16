@@ -11,8 +11,8 @@ class JsonLD(DBpediaCache):
     """
     This class is for traversing JSON-LDs and finding/fetching values from their keys
     """
-    def __init__(self, unittest=False):
-        super().__init__(unittest=unittest)
+    def __init__(self):
+        super().__init__()
 
     def get_body_text_from_dbpedia_json(self, url):
         """
@@ -30,15 +30,16 @@ class JsonLD(DBpediaCache):
             return None
 
         text = None
-        for el in json_ld["@graph"]:
-            for key, value in el.items():
-                if key == "http://dbpedia.org/ontology/abstract":
-                    for l in value:
-                        if l["@language"] == "en":
-                            h = HTMLParser()
-                            text = h.unescape(l["@value"])
-                            text = text.encode('utf-8')
-                            break
+        if "@graph" in json_ld.keys():
+            for el in json_ld["@graph"]:
+                for key, value in el.items():
+                    if key == "http://dbpedia.org/ontology/abstract":
+                        for l in value:
+                            if l["@language"] == "en":
+                                h = HTMLParser()
+                                text = h.unescape(l["@value"])
+                                text = text.encode('utf-8')
+                                break
 
         if text:
             return text

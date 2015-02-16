@@ -149,6 +149,12 @@ class TagMeService:
                 raise Exception("TagmeService.relate(): Probably wrong Wikipedia title for 'titles' arg")
             output = [r for r in results["result"] if float(r["rel"]) > min_rho]
             return output
+        elif results["errors"] != 0 and "err" in results.keys() and results["err"] == "Unable to parse second title":
+            print(BadRequest("Cannot find title in TagMe: " + str(results)))
+            return None
+        elif results["errors"] != 0 and "result" in results.keys() and results["result"][0]["err"] == "Unable to parse second title":
+            print(BadRequest("Cannot find title in TagMe: " + str(results)))
+            return None
 
         raise BadRequest('TagMe API responded with an error: ' + str(results))
 

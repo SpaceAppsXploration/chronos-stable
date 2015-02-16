@@ -1,16 +1,15 @@
 __author__ = 'lorenzo'
 
 from pprint import pprint
-
 from bs4 import BeautifulSoup
+
+from datastoreapi.wrapper import *
 from datastoreapi import datastoreErrors
-
-from main.mongod import get_connection
 from toolbox import tools
-from datastoreapi.buildDatastore import Build
 
 
-class XMLskos(Build):
+
+class XMLskos():
     """
     Utilities to handle the operations on JPL's SKOS-XML document
     -------------------------------------------------------------
@@ -20,15 +19,16 @@ class XMLskos(Build):
     """
 
     def __init__(self, xml_string):
-        super().__init__(mongod=get_connection())
+        self.connection = Wrapper()
+        self.mongod = self.connection.return_connection()
         self.xml_string = xml_string
         self.provider = self.mongod.base.find_one({
-            "@id": self.PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
+            "@id": PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
     def find_concept(self, code):
         for cc in self.return_soup().find_all("skos:concept"):
-            if cc["rdf:about"] == "subj:"+code:
+            if cc["rdf:about"] == "subj:" + code:
                 return cc
 
     def return_soup(self):
@@ -47,31 +47,31 @@ class XMLskos(Build):
         :param code: code of the concept taken from XML property
         :return: Mongo doc "_id" of the resource
         """
-        from datastoreapi.XMLstringHandler.STIdivisions import STIdivision
-        from datastoreapi.XMLstringHandler.STIsubjectsAndKeywords import STIsubject
+        from objectsapi.XMLstringHandler.STIdivisions import STIdivision
+        from objectsapi.XMLstringHandler.STIsubjectsAndKeywords import STIsubject
 
         int_code = int(code)
         if int_code == 100:
             # concept is the STI itself
-            doc_id = self.PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
+            doc_id = PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
             doc = {
                 "@language": "en",
-                "@type": self.SKOS_CONCEPT,
+                "@type": SKOS_CONCEPT,
                 "chronos:group": "STI",
                 "chronos:code": code,
-                "schema:provider": {"@type": self.RDF_RESOURCE, "@value": doc_id},
+                "schema:provider": {"@type": RDF_RESOURCE, "@value": doc_id},
                 "skos:prefLabel": concept.find("skos:preflabel").string,
                 "skos:scopeNote": concept.find("skos:scopenote").string,
                 "@id": doc_id,
                 "skos:narrower": [],
                 "owl:sameAs": [
                     {
-                        "@type": self.RDF_RESOURCE, 
-                        "@value": self.STI_LD_LINK
+                        "@type" : RDF_RESOURCE,
+                        "@value": STI_LD_LINK
                     },
                     {
-                        "@type": self.RDF_RESOURCE, 
-                        "@value": tools.get_resource_url_from_jsond_url(self.STI_LD_LINK)
+                        "@type": RDF_RESOURCE,
+                        "@value": tools.get_resource_url_from_jsond_url(STI_LD_LINK)
                     }
                 ],
                 "schema:url": {"@type": "http://schema.org/URL", "@value": "http://www.sti.nasa.gov/"}
@@ -82,10 +82,10 @@ class XMLskos(Build):
             return check
         elif int_code == 3056:
             # "General" category
-            doc_id = self.PRAMANTHA_URL % ("general", "General")
+            doc_id = PRAMANTHA_URL % ("general", "General")
             doc = {
                 "@language": "en",
-                "@type": self.SKOS_CONCEPT,
+                "@type": SKOS_CONCEPT,
                 "chronos:group": "STI",
                 "chronos:code": code,
                 "schema:provider": {},
@@ -121,7 +121,7 @@ class XMLskos(Build):
             pprint("AREA >>>>>>>>>>>>>>:" + str(pref_label))
             doc = {
                 "@language": "en",
-                "@type": self.SKOS_CONCEPT,
+                "@type": SKOS_CONCEPT,
                 "chronos:group": "areas",
                 "chronos:code": code,
                 "schema:provider": {},
@@ -129,7 +129,7 @@ class XMLskos(Build):
                 "skos:broader": {},
                 "skos:narrower": [],
                 "skos:scopeNote": concept.find("skos:scopenote").string,
-                "@id": self.PRAMANTHA_URL % ("areas", pref_label.replace(' ', '+').lower()),
+                "@id": PRAMANTHA_URL % ("areas", pref_label.replace(' ', '+').lower()),
                 "owl:sameAs": {}
             }
 
@@ -144,7 +144,7 @@ class XMLskos(Build):
         :param obj:
         :return:
         """
-        from datastoreapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
+        from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 
         concept_utilities = SKOSconcepts()
         pref_label = obj.find("skos:preflabel").string
@@ -155,7 +155,7 @@ class XMLskos(Build):
             id_ = self.store_sti_document(obj, obj.find("nt2:code").string)
             doc = self.mongod.base.find_one({"_id": id_})
 
-        self.append_link_to_mongodoc(doc, "schema:provider", self.provider, "base")
+        self.connection.append_link_to_mongodoc(doc, "schema:provider", self.provider, "base")
 
         if obj.find_all('skos:broader') is not None:
             for broad in obj.find_all('skos:broader'):
@@ -179,7 +179,7 @@ class XMLskos(Build):
         # check if all concept has a 'provider'
         for obj in enumerate(self.mongod.base.find({"chronos:group": "keywords"})):
             doc = self.mongod.base.find_one({"_id": obj[1]["_id"]})
-            self.append_link_to_mongodoc(doc, "schema:provider", self.provider, "base")
+            self.connection.append_link_to_mongodoc(doc, "schema:provider", self.provider, "base")
 
 
 if __name__ == "__main__":

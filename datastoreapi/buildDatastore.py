@@ -11,21 +11,11 @@ from datastoreapi.wrapper import *
 from toolbox import tools
 
 
-class Build():
+class Build:
     """
     This class contains all the methods used in "main" package's steps
     ------------------------------------------------------------------
-    It uses all the classes defined in the 'cloudapi' and 'tagmeapi' packages.
-
-    This is the parent class for different classes defining and storing types of documents:
-        :child STItaxonomyUtilities: Set of tools to process and store taxonomy concepts
-        :child STIdivision: To format and store NASA taxonomy divisions, from XML to cloud
-        :child STIsubject: To format and store NASA taxonomy subjects and keywords, from XML to cloud
-        :child ChronosMission: To format, merge and store launches and missions data from DBpedia and old database, from file to cloud
-        :child ChronosTarget: To format and store planets data from the old database, from file to cloud
-        :child PublicRepoDocument: To format, link and store documents indexing external resources, from file to cloud
-
-    :param mongod: the connection to a MongoDB instance
+    It uses all the classes defined in the 'datastoreapi' and 'tagmeapi' packages.
 
     :method add_ontologies: takes the ontologies file in the local directory and dumps them in the DB
     :method add_all_concept: read and store all the <skos:Concept> tags in the raw XML string,
@@ -71,6 +61,15 @@ class Build():
         self.mongod.webpages.ensure_index("@id", unique=True)
         self.mongod.DBpediacache.ensure_index("@id", unique=True)
 
+        self.sensors = None
+        self.chronos = None
+        self.astronomy = None
+        self.engineering = None
+
+        print("Build Constructor")
+        # Finished initializing the basic building object
+
+    def load_ontologies(self):
         import simplejson as json
         import platform
         path = os.path.abspath(os.path.join(CURRENT_DIR, os.pardir))
@@ -82,41 +81,20 @@ class Build():
             path += '\\SensorOntology\\'
 
         # Loading  Sensors ontology from file
-        self.sensors = None
         with open(path + "SpaceSensor_json-ld_v2.json", "r", encoding="utf8") as jsonld:
             self.sensors = json.loads(jsonld.read())
 
         # Loading  Chronos ontology from file
-        self.chronos = None
         with open(path + "ChronosOntology.json", "r", encoding="utf8") as jsonld:
             self.chronos = json.loads(jsonld.read())
 
         # Loading  Astronomy ontology from file
-        self.astronomy = None
         with open(path + "Astronomy.json", "r", encoding="utf8") as jsonld:
             self.astronomy = json.loads(jsonld.read())
 
         # Loading  Engineering ontology from file
-        self.engineering = None
         with open(path + "Engineering.json", "r", encoding="utf8") as jsonld:
             self.engineering = json.loads(jsonld.read())
-
-        print("Build Constructor")
-        # Finished initializing the basic building object
-
-    #
-    # Starting of the main algorithm methods
-    # Step 1: add ontologies to the datastore
-    #
-    def add_ontologies(self):
-        """
-        Takes ontologies from the files and stores them as single documents in the 'ontology' collection.
-        All the basic concepts and physical properties are initialized also as a 'dbpediadocs' document connected
-         to the ontology documents with skos:exactMatch property
-        :return:
-        """
-        from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
-        from datastoreapi.datastoreErrors import DocumentExists
 
         sensors = self.sensors['defines']
         chronos = self.chronos['defines']
@@ -124,6 +102,25 @@ class Build():
         engineering = self.engineering['defines']
 
         ontologies = sensors + chronos + astronomy + engineering
+        return ontologies
+
+    #
+    # Starting of the main algorithm methods
+    #
+
+    # Step 1: add ontologies to the datastore
+    def add_ontologies(self):
+        """
+        Takes ontologies from the files and stores them as single documents in the 'ontology' collection.
+        All the basic concepts and physical properties are initialized also as a 'dbpediadocs' document connected
+         to the ontology documents with skos:exactMatch property
+        :return:
+        """
+        ontologies = self.load_ontologies()
+
+        from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
+        from datastoreapi.datastoreErrors import DocumentExists
+
         # from pprint import pprint
         # pprint(ontologies)
 
@@ -153,14 +150,18 @@ class Build():
 
     # Step 2: add SKOS concepts
     @staticmethod
-    def add_all_concepts():
+    def add_all_concepts(test=False):
         """
         Looks for concepts in bs4 XML-DOM, loops over all and stores them using XMLskos.store_sti_document
         :return: None
         """
         # load XML-munching utilities
         from objectsapi.XMLstringHandler.XMLskos import XMLskos
-        from input.JPLSKOS.jpl_skos import jpl_skos_xml
+        if not test:
+            from input.JPLSKOS.jpl_skos import jpl_skos_xml
+        else:
+            from tests.test_inputs.mockData import NASAxml_test
+            jpl_skos_xml = NASAxml_test
 
         xml_processing = XMLskos(xml_string=jpl_skos_xml)
         # add root object
@@ -254,7 +255,7 @@ class Build():
         return None
 
     @staticmethod
-    def add_missions():
+    def add_missions(test=False):
         """
         Stores in the database all the information about missions, taken from a JSONs: a single file about missions
         and many others about launches
@@ -283,34 +284,49 @@ class Build():
         # pprint(missions_to_store)
 
         # first part added from mission.py file
-        for m in missions_to_store:
+        for i, m in enumerate(missions_to_store):
             new = CHRONOSmission(m)
             new.store_mission()
+            if test and i > 25:
+                break
 
         # second part added from Launches directory
         history = get_launches_from_file()
-        for year in history.keys():
+        for i, year in enumerate(history.keys()):
             for m in history[year]:
                 new = CHRONOSmission(m)
                 new.store_launch(year)
+            if test and i == 2:
+                # if test is True store only two years of launches
+                break
 
         return None
 
     @staticmethod
-    def add_events():
+    def add_events(test=False):
         from toolbox import tools
+        from datastoreapi.datastoreErrors import DocumentExistNot
         from input.Details.missions_ids import missions_ids
         from objectsapi.ChronosObjects.chronosEvent import CHRONOSEvent
 
-        for i in missions_ids:
+        for i, m in enumerate(missions_ids):
             # retrieve events referred to a mission from old APIs
-            js = tools.retrieve_json("http://www.spacexplore.it:80/api/missions/details/" + str(i))
-            new = CHRONOSEvent(i, js)
-            new.store_event()
+            js = tools.retrieve_json("http://www.spacexplore.it:80/api/missions/details/" + str(m))
+            try:
+                new = CHRONOSEvent(m, js)
+                new.store_event()
+            except DocumentExistNot:
+                if test:
+                    continue
+                else:
+                    raise DocumentExistNot("EVENTS API: This mission is not in the DB")
+            # if test, dont raise the error adn stop after some events are stored
+            if i > 20:
+                break
 
         return None
 
-    def link_targets_and_events(self):
+    def link_targets_and_events(self, test=False):
         """
         Establishes "chronos:relatedDoc" predicate to Targets and Missions documents
         :return: None
@@ -325,14 +341,16 @@ class Build():
             ]},
             timeout=False)
 
-        for d in docs:
+        for i, d in enumerate(docs):
             ops.store_annotations_for_targets_and_events(doc=d)
+            if test and i > 15:
+                break
 
         del ops
         docs.close()
         return None
 
-    def semantic_links_for_missions(self):
+    def semantic_links_for_missions(self, test=False):
         from toolbox import surfing
         from tagmeapi.tagMeService import TagMeService, BadRequest
         from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
@@ -377,7 +395,7 @@ class Build():
 
         missions = self.mongod.base.find({"chronos:group": "missions"}, timeout=False)
 
-        for m in missions:
+        for i, m in enumerate(missions):
             # get resource
             # get body of the resource
             to_crawl = m["owl:sameAs"][0]["@value"]  # "http://dbpedia.org/data/Clementine_(spacecraft).jsond"
@@ -388,11 +406,13 @@ class Build():
             except DocumentExistNot:
                 continue
             tag_and_link_resources_to_mission(m, text)
+            if test and i > 15:
+                break
 
         missions.close()
         return None
 
-    def relate_stored_dbpedias(self):
+    def relate_stored_dbpedias(self, test=False):
         """
         loops through all dbpedia stored and check if there are high-rhos relating.
         if yes link resources with "chronos:relatedMatch"
@@ -404,19 +424,20 @@ class Build():
 
         dbpedias = self.mongod.base.find({"chronos:group": "dbpediadocs"}, timeout=False)
 
-        for d in dbpedias:
+        for i, d in enumerate(dbpedias):
             # relate with the rest of dbpedias
             # filter by rhos
             # link each other chronos:relatedMatch
             name = tools.from_dbpedia_url_return_slug(d["owl:sameAs"][0]["@value"])
-            for d2 in dbpedias:
+            print(d["skos:altLabel"], name)
+            for t, d2 in enumerate(dbpedias):
                 ops = surfing.JsonLD()
                 comparing = tools.from_dbpedia_url_return_slug(d2["owl:sameAs"][0]["@value"])
                 del ops
                 if name != "Space" and comparing != "Space" and name != comparing:
                     print("Relating...")
                     output = TagMeService.relate(name, comparing, min_rho=0.67)
-                    if len(output) != 0:
+                    if output and len(output) != 0:
                         print(">>>>>>>>>>>>>>>> Linking " + name + " with " + comparing)
                         try:
                             self.connection.append_link_to_mongodoc(d, "chronos:relatedMatch", d2, "base")
@@ -426,18 +447,24 @@ class Build():
                             self.connection.append_link_to_mongodoc(d2, "chronos:relatedMatch", d, "base")
                         except DocumentExists:
                             pass
+                if test and t > 5:
+                    break
+            if test and i > 10:
+                break
+
         dbpedias.close()
         return None
 
+    # Layer Two
     @staticmethod
-    def crawl_agencies():
+    def crawl_agencies(test=False):
         """
         Does the crawling in agencies websites and store results in 'crawling' collection
         :return: None
         """
         from objectsapi.ResourceObjects.agenciesWebPages import CrawlSearchEngine
         new = CrawlSearchEngine()
-        new.start_loops()  # crawl and save in crawling cache
+        new.start_loops(test=test)  # crawl and save in crawling cache
 
     def crawl_google_search(self):
         # to be implemented
@@ -445,7 +472,7 @@ class Build():
 
     def store_crawling_cache(self):
         """
-        Store in the documents in the 'crawling' collection
+        Store the documents in the 'crawling' collection
         :return: None
         """
         from objectsapi.ResourceObjects.agenciesWebPages import WebPages

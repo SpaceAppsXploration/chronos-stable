@@ -32,7 +32,7 @@ class SKOSconcepts():
             self.db.base.insert(scheme)
             new_scheme = self.db.base.find_one({"@id": at_id})
             try:
-                self.append_link_to_mongodoc(new_scheme, "schema:provider", self.provider, "base")
+                self.connection.append_link_to_mongodoc(new_scheme, "schema:provider", self.provider, "base")
             except DocumentExists:
                 pass
             return new_scheme
@@ -46,7 +46,7 @@ class SKOSconcepts():
             self.db.base.insert(collection)
             new_coll = self.db.base.find_one({"@id": at_id})
             try:
-                self.append_link_to_mongodoc(new_coll, "schema:provider", self.provider, "base")
+                self.connection.append_link_to_mongodoc(new_coll, "schema:provider", self.provider, "base")
             except DocumentExists:
                 pass
 
@@ -54,7 +54,8 @@ class SKOSconcepts():
 
         return check
 
-    def make_id_from_concept(self, concept, category):
+    @staticmethod
+    def make_id_from_concept(concept, category):
         """
         Create label and full URL from
         :param concept: a Concept's BS4 object
@@ -63,11 +64,12 @@ class SKOSconcepts():
         pref_label = concept.find("skos:preflabel").string
         label = pref_label.lower()
         url_label = label.replace(' ', '+').replace(',', '')
-        this_id = self.PRAMANTHA_URL % (category, url_label)
+        this_id = PRAMANTHA_URL % (category, url_label)
 
         return pref_label, this_id
 
-    def make_id_from_slug(self, keyword, category):
+    @staticmethod
+    def make_id_from_slug(keyword, category):
         """
         Create label and full URL from
         :param keyword: a keyword string
@@ -75,7 +77,7 @@ class SKOSconcepts():
         """
         label = keyword.lower()
         label = label.replace(' ', '+').replace(',', '')
-        this_id = self.PRAMANTHA_URL % (category, label)
+        this_id = PRAMANTHA_URL % (category, label)
 
         return label, this_id
 
@@ -99,7 +101,7 @@ class SKOSconcepts():
             return
 
         try:
-            return self.append_link_to_mongodoc(document, "skos:broader", concept, "base")
+            return self.connection.append_link_to_mongodoc(document, "skos:broader", concept, "base")
         except DocumentExists:
             return None
 
@@ -111,6 +113,6 @@ class SKOSconcepts():
             return
 
         try:
-            return self.append_link_to_mongodoc(document, "skos:narrower", concept, "base")
+            return self.connection.append_link_to_mongodoc(document, "skos:narrower", concept, "base")
         except DocumentExists:
             return None

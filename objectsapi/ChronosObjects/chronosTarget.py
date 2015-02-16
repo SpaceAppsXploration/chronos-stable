@@ -3,31 +3,30 @@ Base Class to create an instance of type ChronosTarget from a static JSON file
 and store it into the MongoDB instance
 """
 
-from datastoreapi.buildDatastore import Build
-from main.mongod import get_connection
+from datastoreapi.wrapper import *
 from toolbox import tools
 from datastoreapi.datastoreErrors import DocumentExists
-from datastoreapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
+from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 
 
-class CHRONOStarget(Build):
+class CHRONOStarget:
     def __init__(self, obj):
-        super().__init__(mongod=get_connection())
+        self.connection = Wrapper()
+        self.db = self.connection.return_connection()
         self.obj = obj
-        self.db = self.mongod
-        #create a blank node to handle the collection of divisions
+        # create a blank node to handle the collection of divisions
         self.coll = {
             "@language": "en",
-            "@type": self.SKOS_COLLECTION,
+            "@type": SKOS_COLLECTION,
             "schema:provider": [dict({
                 "@value": "http://projectchronos.eu/org",
-                "@type": self.RDF_RESOURCE
+                "@type": RDF_RESOURCE
             })],
             "@id": "_:bodies1",
-            "skos:prefLabel": "celetial bodies collection",
+            "skos:prefLabel": "celestial bodies collection",
             "skos:editorialNote": {
                 "@value": "Collection of celestial bodies targeted by Missions",
-                "@type": self.RDF_PLAIN_LITERAL
+                "@type": RDF_PLAIN_LITERAL
             }, "skos:memberList": []
         }
 
@@ -40,13 +39,15 @@ class CHRONOStarget(Build):
         """
 
         # import blank document
-        from datastoreapi.basicDocs import BasicDoc
-        doc = BasicDoc.blank_target()
+        from objectsapi.basicDocs import BasicDoc
+        new = BasicDoc()
+        doc = new.blank_target()
+        del new
 
         # set basic keys
-        doc["@id"] = self.PRAMANTHA_URL % ("targets", self.obj["slug"])
+        doc["@id"] = PRAMANTHA_URL % ("targets", self.obj["slug"])
         doc["@type"] = self.obj["body_type"]
-        doc["owl:sameAs"][0]["@value"] = self.DBPEDIA_URL % (self.obj["slug"])
+        doc["owl:sameAs"][0]["@value"] = DBPEDIA_URL % (self.obj["slug"])
         xml = tools.get_resource_url_from_jsond_url(self.obj["slug"])
         doc["owl:sameAs"][1]["@value"] = xml
         doc["skos:prefLabel"] = self.obj["name"]
@@ -68,7 +69,7 @@ class CHRONOStarget(Build):
             # append to memberList of collection
             blank = self.concept_utilities.find_or_create_collection("_:bodies1", self.coll)
             try:
-                self.append_link_to_mongodoc(blank, "skos:memberList", body_doc, "base")
+                self.connection.append_link_to_mongodoc(blank, "skos:memberList", body_doc, "base")
             except DocumentExists:
                 pass
 
