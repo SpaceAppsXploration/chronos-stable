@@ -99,7 +99,7 @@ DBPEDIA_URL = "http://dbpedia.org/data/%s.jsond"        # string-substitute with
 DBPEDIA_RESOURCE = "http://dbpedia.org/resource/%s"     # string-substitute with wikipage title (slug)
 PRAMANTHA_URL = "http://pramantha.eu/%s/%s"             # domain for local resources (chronos:group, slug)
 CHRONOS_GROUPS = ['missions', 'keywords', 'events', 'targets',
-                  'dbpediadocs', 'area', 'divisions', 'schemes',
+                  'dbpediadocs', 'areas', 'divisions', 'schemes',
                   'subjects', 'urls', 'events']
 
 # common Links to use in resources addresses
