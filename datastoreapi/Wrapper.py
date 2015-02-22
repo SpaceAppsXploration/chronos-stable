@@ -7,6 +7,7 @@ __author__ = 'Lorenzo'
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
+import pyorient
 
 from datastoreapi.datastoreErrors import DocumentExists
 
@@ -16,39 +17,37 @@ class Wrapper(object):
     This is the class that wraps the connection, Wrapper instance or any of its children has to be called to get connection
     ----------------------------------------------------------------------
 
-    :method return_connection: return to other classes and scripts the connection to Mongo
+    :method return_mongo: return to other classes and scripts the connection to Mongo
+    :method return_orient: return to other classes and scripts the connection to Orient
     """
 
-    __client = None
-    __mongod = None
+    __mongo = None   # client
+    __mongod = None   # connection to database
 
     def __init__(self):
-        self.__client = MongoClient('localhost', 27017)
+        self.__mongo = MongoClient('localhost', 27017)
         self.test = True
 
-        self.__mongod = self.__get_connection()
+        self.__mongod = self.__get_mongo_db()
 
-    def __get_connection(self):
+    def __get_mongo_db(self):
         # create a Mongo __client
         if self.test:
-            self.__mongod = self.__client.PMT
+            self.__mongod = self.__mongo.PMT
         else:
-            self.__mongod = self.__client.PTEST
+            self.__mongod = self.__mongo.PTEST
 
         # print(type(self.__mongod))
         return self.__mongod
 
-    def return_connection(self):
+    def return_mongo(self):
         if self.__mongod is not None:
             return self.__mongod
 
         raise ConnectionFailure("MongoDB is not up")
 
-    def __return_client(self):
-        if self.__client is not None:
-            return self.__client
-
-        raise ConnectionFailure("Client has not been initiated")
+    def create_databases(self):
+        pass
 
     def append_link_to_mongodoc(self, document, field, resource, in_collection):
         """

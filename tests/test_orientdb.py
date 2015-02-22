@@ -2,7 +2,7 @@ __author__ = 'lorenzo'
 
 import pyorient
 import requests
-import demjson
+
 from pprint import pprint
 import simplejson as json
 

@@ -18,14 +18,14 @@ class SKOSconcepts():
     """
     def __init__(self):
         self.connection = Wrapper()
-        self.db = self.connection.return_connection()
+        self.db = self.connection.return_mongo()
         self.provider = self.db.base.find_one({
             "@id": PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
     def find_or_create_scheme(self, at_id, scheme):
         check = self.db.base.find_one({"@id": at_id})
-        if check is None:
+        if not check:
             pprint("Store" + str(scheme))
             scheme["@id"] = at_id
             scheme["skos:prefLabel"] = "reference scheme for subject number " + at_id
@@ -41,7 +41,7 @@ class SKOSconcepts():
 
     def find_or_create_collection(self, at_id, collection):
         check = self.db.base.find_one({"@id": at_id})
-        if check is None:
+        if not check:
             pprint("Store" + str(collection))
             self.db.base.insert(collection)
             new_coll = self.db.base.find_one({"@id": at_id})

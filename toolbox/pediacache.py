@@ -13,7 +13,7 @@ class DBpediaCache:
     """
     def __init__(self):
         self.connection = Wrapper()
-        self.db = self.connection.return_connection()
+        self.db = self.connection.return_mongo()
 
 
     def get_or_retrieve_and_store(self, slug):

@@ -12,7 +12,7 @@ from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 class CHRONOStarget:
     def __init__(self, obj):
         self.connection = Wrapper()
-        self.db = self.connection.return_connection()
+        self.db = self.connection.return_mongo()
         self.obj = obj
         # create a blank node to handle the collection of divisions
         self.coll = {
@@ -60,7 +60,7 @@ class CHRONOStarget:
         doc["chronos:useInSim"]["@value"] = self.obj["use_in_sim"]
 
         check = self.db.base.find_one({"@id": doc["@id"]})
-        if check is None:
+        if not check:
             # body is not in the KB, create resource
             body_id = self.db.base.insert(doc)
             body_doc = self.db.base.find_one({"_id": body_id})

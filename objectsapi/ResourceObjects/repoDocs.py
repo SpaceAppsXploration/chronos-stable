@@ -14,7 +14,7 @@ from toolbox.pediacache import DBpediaCache
 class PublicRepoDocument():
     def __init__(self, dbpedia=None, freebase=None, abstract=None):
         self.connection = Wrapper()
-        self.db = self.connection.return_connection()
+        self.db = self.connection.return_mongo()
         self.dbpedia = dbpedia  # url of dbpedia jsond or xml
         self.freebase = freebase  # url of freebase doc
         self.abstract = abstract  # optional abstract

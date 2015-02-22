@@ -38,7 +38,7 @@ class Build:
 
     def __init__(self):
         self.connection = Wrapper()
-        self.mongod = self.connection.return_connection()
+        self.mongod = self.connection.return_mongo()
 
         # create collections in DB
         try:
@@ -374,13 +374,13 @@ class Build:
                     except KeyError:
                         continue
                     doc = self.mongod.base.find_one({"skos:altLabel": alt_label})
-                    if doc is None:
+                    if not doc:
                         # store resource and link resource[chronos:mission] = mission document
                         new_url = DBPEDIA_URL % alt_label
                         new = PublicRepoDocument(dbpedia=new_url)
                         new_doc = new.store_wiki_resource()
                         del new
-                        if new_doc is None:
+                        if not new_doc:
                             return
                         self.connection.append_link_to_mongodoc(new_doc, "chronos:relMission", mssn, "base")
 
@@ -522,7 +522,7 @@ class Build:
                     new = PublicRepoDocument(dbpedia=dbpedia)
                     try:
                         new_doc = new.store_wiki_resource()
-                        if new_doc is None:
+                        if not new_doc:
                             continue
                     except DocumentExists:
                         try:
@@ -609,7 +609,7 @@ class Build:
                         except DocumentExists:
                             pass
                 # set a string representing abstract and title of webpage
-                if res["abstract"] is None:
+                if not res["abstract"]:
                     docstring = res["title"]
                 else:
                     docstring = res["abstract"] + ' ' + res["title"]

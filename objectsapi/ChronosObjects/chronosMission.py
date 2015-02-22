@@ -22,7 +22,7 @@ class CHRONOSmission:
     """
     def __init__(self, obj):
         self.connection = Wrapper()
-        self.db = self.connection.return_connection()
+        self.db = self.connection.return_mongo()
         self.mission_obj = obj
         self.concept_utilities = SKOSconcepts()  # instance of the concept utilities
 
@@ -129,7 +129,7 @@ class CHRONOSmission:
                     pprint("INSTRUMENTS ALREADY ADDED TO MISSION >>>>:" + str(check["@id"]))
                 return None
 
-        if self.db.base.find_one({"@id": PRAMANTHA_URL % ("missions", slug)}) is None:
+        if not self.db.base.find_one({"@id": PRAMANTHA_URL % ("missions", slug)}):
             # create the basic document about the launch
             new = BasicDoc()
             doc = new.blank_launch()

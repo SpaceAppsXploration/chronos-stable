@@ -18,7 +18,7 @@ class TagMeOperation:
     """
     def __init__(self):
         self.connection = Wrapper()
-        self.mongod = self.connection.return_connection()
+        self.mongod = self.connection.return_mongo()
 
     def insert_sections(self):
         """
@@ -193,7 +193,7 @@ class TagMeOperation:
                                 TagMeService.relate(titles=title, min_rho=0.39)
                         ):
                             check = self.mongod.base.find_one({"chronos:group": "dbpediadocs", "skos:altLabel": title})
-                            if check is None:
+                            if not check:
                                 to_store = PublicRepoDocument(dbpedia=DBPEDIA_URL % title)
                                 try:
                                     check = to_store.store_wiki_resource()

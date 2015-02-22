@@ -24,7 +24,7 @@ exceptions = {"ARTEMIS": "THEMIS", "MAFL": "Astrobiology_Field_Laboratory", "Spu
 class CHRONOSEvent:
     def __init__(self, old_id, obj):
         self.connection = Wrapper()
-        self.db = self.connection.return_connection()
+        self.db = self.connection.return_mongo()
         self.js_obj = obj
         self.old_id = old_id
 
@@ -76,7 +76,7 @@ class CHRONOSEvent:
                     "@value": content,
                 }
 
-            if self.db.base.find_one({"@id": this_id}) is None:
+            if not self.db.base.find_one({"@id": this_id}):
                 id_ = self.db.base.insert(event)
                 this_doc = self.db.base.find_one({"_id": ObjectId(id_)})
                 if mssn is not None:

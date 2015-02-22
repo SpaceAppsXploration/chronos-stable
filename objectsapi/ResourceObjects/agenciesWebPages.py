@@ -14,7 +14,7 @@ class CrawlSearchEngine:
     """
     def __init__(self):
         self.connection = Wrapper()
-        self.db = self.connection.return_connection()
+        self.db = self.connection.return_mongo()
 
     def start_loops(self, test):
         ### import scraping lib from local directory
@@ -88,7 +88,7 @@ class WebPages:
     """
     def __init__(self, cache_obj=None, publisher=None, obj=None):
         self.connection = Wrapper()
-        self.db = self.connection.return_connection()
+        self.db = self.connection.return_mongo()
         self.cache_obj = cache_obj  # used to store from cache, if None store from static files
         self.obj = obj
 
@@ -142,7 +142,7 @@ class WebPages:
             ####print(doc)
             print(hashed)
             check = self.db.webpages.find_one({"chronos:base64": hashed})
-            if check is None:
+            if not check:
                 #print("NEW PAGE")
                 _id = self.db.webpages.insert(doc)
                 url_doc = self.db.webpages.find_one(_id)

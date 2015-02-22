@@ -7,7 +7,7 @@
 #    for dbpediadocs skos:prefLabel is always 'None'
 #
 #    for targets chronos:slug is the wikipedia title of the term (i.e. "Clementine_(Spacecraft)")
-#    for dbpediadocs skos:prefLabel is the full English name
+#    for dbpediadocs skos:prefLabel is None (null in Mongo)
 #
 
 __author__ = 'lorenzo'
@@ -263,7 +263,7 @@ class BasicDoc():
             "@id": None,
             "chronos:toSearch": [],
             "skos:inScheme": {},  # in scheme with same subject
-            "skos:exactMatch": [],  # semantical match with its subject
+            "skos:exactMatch": [],  # semantic match with the keyword that is its subject
             "skos:scopeNote": []
         }
 

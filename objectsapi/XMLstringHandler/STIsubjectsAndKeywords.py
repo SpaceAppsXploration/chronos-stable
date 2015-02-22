@@ -15,7 +15,7 @@ from objectsapi.basicDocs import BasicDoc
 class STIsubject():
     def __init__(self, obj):
         self.connection = Wrapper()
-        self.db = self.connection.return_connection()
+        self.db = self.connection.return_mongo()
         # html object to convert
         self.obj = obj
         self.code = str(obj.find("nt2:code").string)
@@ -53,7 +53,7 @@ class STIsubject():
         self.top_concept["skos:scopeNote"]["@value"] = self.obj.find("skos:scopenote").string
 
         check = self.db.base.find_one({"@id": this_id})
-        if check is None:
+        if not check:
             # create subject's scheme
             new_scheme = self.concept_utilities.find_or_create_scheme("_:subj" + self.code, self.scheme)
             # add TopConcept to document
@@ -97,7 +97,7 @@ class STIsubject():
         kw_doc["@id"] = this_id
         kw_doc["chronos:toSearch"].append(label)
 
-        if self.db.base.find_one({"@id": this_id}) is None:
+        if not self.db.base.find_one({"@id": this_id}):
             pprint(kw_doc)
             id_ = self.db.base.insert(kw_doc)
             this_doc = self.db.base.find_one({"_id": id_})

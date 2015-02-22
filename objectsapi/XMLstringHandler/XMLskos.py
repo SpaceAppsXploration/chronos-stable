@@ -20,7 +20,7 @@ class XMLskos():
 
     def __init__(self, xml_string):
         self.connection = Wrapper()
-        self.mongod = self.connection.return_connection()
+        self.mongod = self.connection.return_mongo()
         self.xml_string = xml_string
         self.provider = self.mongod.base.find_one({
             "@id": PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
@@ -77,7 +77,7 @@ class XMLskos():
                 "schema:url": {"@type": "http://schema.org/URL", "@value": "http://www.sti.nasa.gov/"}
             }
             check = self.mongod.base.find_one({"@id": doc["@id"]})
-            if check is None:
+            if not check:
                 return self.mongod.base.insert(doc)
             return check
         elif int_code == 3056:
@@ -97,7 +97,7 @@ class XMLskos():
             }
 
             check = self.mongod.base.find_one({"@id": doc["@id"]})
-            if check is None:
+            if not check:
                 return self.mongod.base.insert(doc)
             return check["_id"]
         elif int_code > 1000:
@@ -134,7 +134,7 @@ class XMLskos():
             }
 
             check = self.mongod.base.find_one({"@id": doc["@id"]})
-            if check is None:
+            if not check:
                 return self.mongod.base.insert(doc)
             return check["_id"]
 
@@ -151,7 +151,7 @@ class XMLskos():
 
         doc = self.mongod.base.find_one({"skos:prefLabel": pref_label})
 
-        if doc is None:
+        if not doc:
             id_ = self.store_sti_document(obj, obj.find("nt2:code").string)
             doc = self.mongod.base.find_one({"_id": id_})
 

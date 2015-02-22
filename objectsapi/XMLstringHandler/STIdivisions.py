@@ -11,7 +11,7 @@ from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 class STIdivision():
     def __init__(self, obj):
         self.connection = Wrapper()
-        self.mongod = self.connection.return_connection()
+        self.mongod = self.connection.return_mongo()
         # concept object from xml to convert
         self.obj = obj
         self.code = str(obj.find("nt2:code").string)
@@ -35,7 +35,7 @@ class STIdivision():
         pref_label, this_id = self.concept_utilities.make_id_from_concept(self.obj, "divisions")
 
         check = self.mongod.base.find_one({"@id": this_id})
-        if check is None:
+        if not check:
             self.division["@id"] = this_id
             self.division["skos:prefLabel"] = pref_label
             self.division["skos:scopeNote"][0]["@value"] = self.obj.find("skos:scopenote").string
