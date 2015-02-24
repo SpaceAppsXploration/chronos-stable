@@ -3459,7 +3459,7 @@ jpl_skos_xml = """
   <nt2:code>54</nt2:code>
  </skos:Concept>
  <skos:Concept rdf:about='subj:100'>
-  <skos:prefLabel>NASA STI Subject Categories</skos:prefLabel>
+  <skos:prefLabel>NASA STINASA STI Subject Categories</skos:prefLabel>
   <skos:scopeNote>This Facet is created from NASA/SP-2006-7603, the "NASA
     Scientific and Technical Information Scope and Subject
     Category Guide", published in December 2006.  See

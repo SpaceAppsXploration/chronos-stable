@@ -212,7 +212,7 @@ class Build:
                 "$or": [
                     {"chronos:group": "keywords"},
                     {"chronos:group": "subjects"},
-                    {"chronos:group": "areas"}
+                    {"chronos:group": "divisions"}
                 ]
             },
             timeout=False

@@ -100,7 +100,7 @@ class XMLskos():
             if not check:
                 return self.mongod.base.insert(doc)
             return check["_id"]
-        elif int_code > 1000:
+        elif int_code > 100:
             # concept is a Division
             new = STIdivision(obj=concept)
             try:
@@ -115,28 +115,6 @@ class XMLskos():
                 #print(kw)
                 new.add_keyword(kw.string, top_concept)
             return None
-        elif 100 < int_code < 1000:
-            # concept is a Area
-            pref_label = concept.find("skos:preflabel").string
-            pprint("AREA >>>>>>>>>>>>>>:" + str(pref_label))
-            doc = {
-                "@language": "en",
-                "@type": SKOS_CONCEPT,
-                "chronos:group": "areas",
-                "chronos:code": code,
-                "schema:provider": {},
-                "skos:prefLabel": pref_label,
-                "skos:broader": {},
-                "skos:narrower": [],
-                "skos:scopeNote": concept.find("skos:scopenote").string,
-                "@id": PRAMANTHA_URL % ("areas", pref_label.replace(' ', '+').lower()),
-                "owl:sameAs": {}
-            }
-
-            check = self.mongod.base.find_one({"@id": doc["@id"]})
-            if not check:
-                return self.mongod.base.insert(doc)
-            return check["_id"]
 
     def link_sti_document(self, obj):
         """

@@ -44,10 +44,10 @@ class CHRONOSEvent:
             if mssn is None:
                 mssn = self.db.base.find_one({"chronos:group": "missions", "chronos:codename": name})
                 if mssn is None:
-                    mssn = self.db.base.find_one({"chronos:group": "missions", "skos:prefLabel": name})
-                    if mssn is None:
-                        mssn = self.db.base.find_one({"chronos:group": "missions", "chronos:prefLabel": exceptions[name]})
-                        if mssn is None:
+                    mssn = self.db.base.find_one({"chronos:group": "missions", "skos:prefLabel": "\/"+name+"\/i"})
+                    if mssn is None and name in exceptions.keys():
+                        mssn = self.db.base.find_one({"chronos:group": "missions", "skos:prefLabel": exceptions[name]})
+                        if mssn is None and name in exceptions.keys():
                             mssn = self.db.base.find_one({"chronos:group": "missions", "chronos:slug": exceptions[name]})
     
         for e in self.js_obj:
