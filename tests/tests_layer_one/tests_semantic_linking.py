@@ -3,7 +3,7 @@
 # semantic_links_for_missions and relate_stored_dbpedias
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 import unittest

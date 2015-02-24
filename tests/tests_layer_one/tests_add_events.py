@@ -2,7 +2,7 @@
 # Tests for the third stage of 'layer one' of deploying: add_events
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 import unittest

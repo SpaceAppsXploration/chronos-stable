@@ -1,4 +1,4 @@
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 from toolbox.pediacache import DBpediaCache
 from toolbox.surfing import JsonLD

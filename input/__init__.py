@@ -4,4 +4,4 @@ one part of the inputs used to deploy the cloud
 --------------------------------------------------------------------------
 """
 
-__author__ = ['lorenzo', 'claudio']
+__author__ = [['lorenzo@pramantha.net'], 'claudio']

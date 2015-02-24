@@ -1,4 +1,4 @@
-__author__ = 'Lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 from main.layer_zero import deploy_layer_zero
 from main.layer_one import deploy_layer_one

@@ -2,7 +2,7 @@
 # Tests for the last stage of 'layer two' of deploying: store_webpages_mongo_documents
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 import unittest

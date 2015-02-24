@@ -2,7 +2,7 @@
 # Tests for the second stage of 'layer zero' of deploying: add_all_concepts
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 import unittest

@@ -2,7 +2,7 @@
 # Tests for the forth stage of 'layer zero' of deploying: tag_keywords_and_subjects
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 import unittest

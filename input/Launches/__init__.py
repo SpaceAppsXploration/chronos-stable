@@ -4,7 +4,7 @@ This package contains the files with the information about Space Launches By Yea
 They are JSON files
 """
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 

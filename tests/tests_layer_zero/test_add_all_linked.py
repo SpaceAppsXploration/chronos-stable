@@ -2,7 +2,7 @@
 # Tests for the third stage of 'layer zero' of deploying: add_ontologies
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 import unittest
