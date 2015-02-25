@@ -12,7 +12,7 @@
 
 __author__ = ['lorenzo@pramantha.net']
 
-from datastoreapi.wrapper import *
+from datastoreapi.Wrapper import *
 
 
 class BasicDoc():

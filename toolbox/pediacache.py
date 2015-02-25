@@ -1,6 +1,6 @@
 __author__ = ['lorenzo@pramantha.net']
 
-from datastoreapi.wrapper import Wrapper
+from datastoreapi.Wrapper import Wrapper
 
 from toolbox import tools
 from pymongo.errors import DuplicateKeyError, DocumentTooLarge

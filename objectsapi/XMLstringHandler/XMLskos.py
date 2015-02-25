@@ -3,7 +3,7 @@ __author__ = ['lorenzo@pramantha.net']
 from pprint import pprint
 from bs4 import BeautifulSoup
 
-from datastoreapi.wrapper import *
+from datastoreapi.Wrapper import *
 from datastoreapi import datastoreErrors
 from toolbox import tools
 

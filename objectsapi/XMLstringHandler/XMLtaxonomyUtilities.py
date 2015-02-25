@@ -1,7 +1,7 @@
 from pprint import pprint
 
 from datastoreapi.datastoreErrors import DocumentExists, DocumentExistNot
-from datastoreapi.wrapper import *
+from datastoreapi.Wrapper import *
 
 
 class SKOSconcepts():

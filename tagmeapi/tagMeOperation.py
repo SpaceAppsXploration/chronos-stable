@@ -4,7 +4,7 @@ from bson.objectid import ObjectId
 from urllib.parse import quote, unquote
 from pprint import pprint
 
-from datastoreapi.wrapper import *
+from datastoreapi.Wrapper import *
 from datastoreapi.datastoreErrors import *
 from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
 from toolbox import tools

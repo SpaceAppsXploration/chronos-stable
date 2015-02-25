@@ -1,4 +1,4 @@
-from datastoreapi.wrapper import *
+from datastoreapi.Wrapper import *
 from toolbox import tools
 from datastoreapi.datastoreErrors import DocumentExists
 from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts

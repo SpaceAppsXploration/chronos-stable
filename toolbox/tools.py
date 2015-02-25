@@ -12,7 +12,7 @@ import simplejson as json
 import html.parser
 from codecs import raw_unicode_escape_decode
 
-from datastoreapi.wrapper import DBPEDIA_URL, PRAMANTHA_URL, DBPEDIA_RESOURCE, CHRONOS_GROUPS
+from datastoreapi.Wrapper import DBPEDIA_URL, PRAMANTHA_URL, DBPEDIA_RESOURCE, CHRONOS_GROUPS
 
 
 def retrieve(url):

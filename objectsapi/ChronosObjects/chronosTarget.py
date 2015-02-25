@@ -3,7 +3,7 @@ Base Class to create an instance of type ChronosTarget from a static JSON file
 and store it into the MongoDB instance
 """
 
-from datastoreapi.wrapper import *
+from datastoreapi.Wrapper import *
 from toolbox import tools
 from datastoreapi.datastoreErrors import DocumentExists
 from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts

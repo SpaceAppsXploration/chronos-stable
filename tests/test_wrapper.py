@@ -1,7 +1,7 @@
 __author__ = ['lorenzo@pramantha.net']
 
 
-from datastoreapi.wrapper import Wrapper
+from datastoreapi.Wrapper import Wrapper
 
 from pprint import pprint
 

@@ -1,7 +1,7 @@
 from pprint import pprint
 from pymongo.errors import DuplicateKeyError, DocumentTooLarge
 
-from datastoreapi.wrapper import *
+from datastoreapi.Wrapper import *
 from datastoreapi.buildDatastore import Build
 from datastoreapi.datastoreErrors import DocumentExists
 from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts

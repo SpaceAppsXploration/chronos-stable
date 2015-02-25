@@ -7,7 +7,7 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(CURRENT_DIR))
 
 from pymongo.errors import CollectionInvalid
-from datastoreapi.wrapper import *
+from datastoreapi.Wrapper import *
 from toolbox import tools
 
 

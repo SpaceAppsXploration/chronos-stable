@@ -8,7 +8,7 @@ and store it into the MongoDB instance
 from base64 import b64encode
 from bson.objectid import ObjectId
 
-from datastoreapi.wrapper import *
+from datastoreapi.Wrapper import *
 from datastoreapi.datastoreErrors import DocumentExistNot
 from objectsapi.basicDocs import BasicDoc
 
