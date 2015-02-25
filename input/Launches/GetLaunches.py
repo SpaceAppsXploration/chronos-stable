@@ -7,7 +7,7 @@ def get_launches_from_file():
     dict_from_file = dict()
     import os
     path = os.path.dirname(os.path.abspath(__file__))
-    if platform.system() == 'Linux':
+    if (platform.system() == 'Linux' or platform.system() == 'Darwin'):
         ''' linux path '''
         path += '/'
     else:
