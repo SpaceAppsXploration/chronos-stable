@@ -1,4 +1,4 @@
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 NASAxml_test = """<skos:Concept rdf:about='subj:19'>

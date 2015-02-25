@@ -1,4 +1,4 @@
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 dump_isemitteby = {
         "owl:inverseOf" : "http://pramantha.eu/ontology/sensors/emits",

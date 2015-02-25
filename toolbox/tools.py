@@ -3,7 +3,7 @@ This module contains general tools for various basic operations performed by dif
 Tests for all methods in tests/test_toolbox.py
 """
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 import requests
 from urllib.parse import quote

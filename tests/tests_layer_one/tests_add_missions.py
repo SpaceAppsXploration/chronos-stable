@@ -2,7 +2,7 @@
 # Tests for the second stage of 'layer one' of deploying: add_missions
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 import unittest

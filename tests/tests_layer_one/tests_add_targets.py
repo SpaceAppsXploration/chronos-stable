@@ -2,7 +2,7 @@
 # Tests for the first stage of 'layer one' of deploying: add_targets
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 
 import unittest

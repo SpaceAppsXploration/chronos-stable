@@ -10,7 +10,7 @@
 #    for dbpediadocs skos:prefLabel is None (null in Mongo)
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 from datastoreapi.wrapper import *
 

@@ -1,4 +1,4 @@
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 dump_planet = {
         "@type" : "http://pramantha.eu/ontology/dbpediadoc",

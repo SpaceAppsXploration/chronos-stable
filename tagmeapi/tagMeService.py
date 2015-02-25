@@ -2,7 +2,7 @@
 # A basic API to query TagMe RESTful services
 #
 
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 from urllib.parse import quote, urlencode, quote_plus
 import requests

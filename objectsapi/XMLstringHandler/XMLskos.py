@@ -1,4 +1,4 @@
-__author__ = 'lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 from pprint import pprint
 from bs4 import BeautifulSoup
