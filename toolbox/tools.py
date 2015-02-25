@@ -78,6 +78,7 @@ def retrieve_from_sparql(url):
     """
 
     h = html.parser.HTMLParser()
+    url = url.replace(' ', '_' );
     url = h.unescape(url)                   # treat HTML entities
     url = quote(url.encode('utf8'))         # parse url parameters
     sparql = "http://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&query=DESCRIBE+%3C" + \
