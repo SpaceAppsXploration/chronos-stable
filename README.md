@@ -13,7 +13,7 @@ crawling and TagMe API's results.
 <br/><br/>
 
 Copyright 2014, 2015 Pramantha Ltd
-Credits to ['lorenzo@pramantha.net'], Claudio and Jacopo
+Credits to Lorenzo, Claudio and Jacopo
 
 This package contains the file to run a complete Cloud re-creation from local and online resources, using
 the TagMe API

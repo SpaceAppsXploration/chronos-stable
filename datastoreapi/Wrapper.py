@@ -3,11 +3,10 @@
 # And a lot of VARIABLES useful all over the rest of the script
 #
 
-__author__ = 'Lorenzo'
+__author__ = ['lorenzo@pramantha.net']
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
-import pyorient
 
 from datastoreapi.datastoreErrors import DocumentExists
 
