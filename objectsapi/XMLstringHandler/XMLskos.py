@@ -80,26 +80,6 @@ class XMLskos():
             if not check:
                 return self.mongod.base.insert(doc)
             return check
-        elif int_code == 3056:
-            # "General" category
-            doc_id = PRAMANTHA_URL % ("general", "General")
-            doc = {
-                "@language": "en",
-                "@type": SKOS_CONCEPT,
-                "chronos:group": "STI",
-                "chronos:code": code,
-                "schema:provider": {},
-                "skos:prefLabel": concept.find("skos:preflabel").string,
-                "skos:scopeNote": concept.find("skos:scopenote").string,
-                "@id": doc_id,
-                "skos:narrower": [],
-                "skos:broader": {}
-            }
-
-            check = self.mongod.base.find_one({"@id": doc["@id"]})
-            if not check:
-                return self.mongod.base.insert(doc)
-            return check["_id"]
         elif int_code > 100:
             # concept is a Division
             new = STIdivision(obj=concept)
@@ -162,3 +142,26 @@ class XMLskos():
 
 if __name__ == "__main__":
     print("This is a useful module, not a stand-alone script")
+
+    """
+        elif int_code == 3056:
+            # "General" category
+            doc_id = PRAMANTHA_URL % ("general", "General")
+            doc = {
+                "@language": "en",
+                "@type": SKOS_CONCEPT,
+                "chronos:group": "STI",
+                "chronos:code": code,
+                "schema:provider": {},
+                "skos:prefLabel": concept.find("skos:preflabel").string,
+                "skos:scopeNote": concept.find("skos:scopenote").string,
+                "@id": doc_id,
+                "skos:narrower": [],
+                "skos:broader": {}
+            }
+
+            check = self.mongod.base.find_one({"@id": doc["@id"]})
+            if not check:
+                return self.mongod.base.insert(doc)
+            return check["_id"]
+    """

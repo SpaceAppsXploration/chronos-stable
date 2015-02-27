@@ -62,6 +62,7 @@ class SKOSconcepts():
         :return: (pref_label, this_id)
         """
         pref_label = concept.find("skos:preflabel").string
+        print(">>>>>>>>>>>>>>>>>>>>> pref_labe: " + pref_label)
         label = pref_label.lower()
         url_label = label.replace(' ', '+').replace(',', '')
         this_id = PRAMANTHA_URL % (category, url_label)

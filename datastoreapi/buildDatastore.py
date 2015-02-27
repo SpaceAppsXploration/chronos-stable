@@ -73,7 +73,7 @@ class Build:
         import simplejson as json
         import platform
         path = os.path.abspath(os.path.join(CURRENT_DIR, os.pardir))
-        if (platform.system() == 'Linux' or platform.system() == 'Darwin'):
+        if platform.system() == 'Linux' or platform.system() == 'Darwin':
             ''' linux path '''
             path += '/SensorOntology/'
         else:
