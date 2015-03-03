@@ -60,7 +60,7 @@ class CHRONOStarget:
         doc["chronos:useInSim"]["@value"] = self.obj["use_in_sim"]
 
         check = self.db.base.find_one({"@id": doc["@id"]})
-        if not check:
+        if check is None:
             # body is not in the KB, create resource
             body_id = self.db.base.insert(doc)
             body_doc = self.db.base.find_one({"_id": body_id})

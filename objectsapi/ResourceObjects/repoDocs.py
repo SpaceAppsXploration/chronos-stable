@@ -53,7 +53,7 @@ class PublicRepoDocument():
 
             url = RESOURCE_URL % ("dbpediadocs", label)
             check = self.db.base.find_one({"@id": url})
-            if not check:
+            if check is None:
                 pprint("Storing Resource:" + url)
 
                 new = BasicDoc()

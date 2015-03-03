@@ -93,10 +93,11 @@ class Wrapper(object):
 
 
 # resource repositories links
-DBPEDIA_URL = "http://dbpedia.org/data/%s.jsond"        # string-substitute with wikipage title (slug)
-DBPEDIA_RESOURCE = "http://dbpedia.org/resource/%s"     # string-substitute with wikipage title (slug)
-ONTOLOGY_URL = "http://ontology.projectchronos.eu/%s/"  # domain for ontologies
-RESOURCE_URL = "http://api.pramantha.net/%s/%s"         # domain for local resources (chronos:group, slug)
+DBPEDIA_URL = "http://dbpedia.org/data/%s.jsond"             # string-substitute with wikipage title (slug)
+DBPEDIA_RESOURCE = "http://dbpedia.org/resource/%s"          # string-substitute with wikipage title (slug)
+UMBEL_RESOURCE = "http://umbel.org/umbel/rc/%s"              # string-substitute with umbel title (slug)
+ONTOLOGY_URL = "http://ontology.projectchronos.eu/%s/"       # domain for ontologies
+RESOURCE_URL = "http://api.pramantha.net/data/%s/%s"         # domain for local resources (chronos:group, slug)
 CHRONOS_GROUPS = ['missions', 'keywords', 'events', 'targets',
                   'dbpediadocs', 'areas', 'divisions', 'schemes',
                   'subjects', 'urls', 'events']

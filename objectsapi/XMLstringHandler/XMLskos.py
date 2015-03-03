@@ -109,7 +109,7 @@ class XMLskos():
 
         doc = self.mongod.base.find_one({"skos:prefLabel": pref_label})
 
-        if not doc:
+        if doc is None:
             id_ = self.store_sti_document(obj, obj.find("nt2:code").string)
             doc = self.mongod.base.find_one({"_id": id_})
 

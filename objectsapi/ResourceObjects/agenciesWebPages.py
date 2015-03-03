@@ -142,7 +142,7 @@ class WebPages:
             ####print(doc)
             print(hashed)
             check = self.db.webpages.find_one({"chronos:base64": hashed})
-            if not check:
+            if check is None:
                 #print("NEW PAGE")
                 _id = self.db.webpages.insert(doc)
                 url_doc = self.db.webpages.find_one(_id)
