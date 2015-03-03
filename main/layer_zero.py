@@ -6,9 +6,6 @@ from datastoreapi.buildDatastore import Build
 def deploy_layer_zero():
     building = Build()
 
-    # Store ontologies
-    building.add_ontologies()
-
     # Store taxonomy concepts
     building.add_all_concepts()
 
