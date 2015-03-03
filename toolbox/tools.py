@@ -12,7 +12,7 @@ import simplejson as json
 import html.parser
 from codecs import raw_unicode_escape_decode
 
-from datastoreapi.Wrapper import DBPEDIA_URL, PRAMANTHA_URL, DBPEDIA_RESOURCE, CHRONOS_GROUPS
+from datastoreapi.Wrapper import DBPEDIA_URL, RESOURCE_URL, DBPEDIA_RESOURCE, CHRONOS_GROUPS
 
 
 def retrieve(url):
@@ -159,7 +159,7 @@ def make_pramantha_url_from_slug(kind, trm):
     :param trm: a title or slug
     :return: a DBpedia's resource url
     """
-    return PRAMANTHA_URL % (kind, trm)
+    return RESOURCE_URL % (kind, trm)
 
 
 def make_resource_url_from_slug(trm):

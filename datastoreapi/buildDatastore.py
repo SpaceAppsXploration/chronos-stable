@@ -17,7 +17,6 @@ class Build:
     ------------------------------------------------------------------
     It uses all the classes defined in the 'datastoreapi' and 'tagmeapi' packages.
 
-    :method add_ontologies: takes the ontologies file in the local directory and dumps them in the DB
     :method add_all_concept: read and store all the <skos:Concept> tags in the raw XML string,
         see datastoreapi.XMLstringHandler.XMLskos.py.store_STI_document()
     :method add_all_linked: add to the above stored documents by :add_all_concept the taxonomy's
@@ -61,94 +60,11 @@ class Build:
         self.mongod.webpages.ensure_index("@id", unique=True)
         self.mongod.DBpediacache.ensure_index("@id", unique=True)
 
-        self.sensors = None
-        self.chronos = None
-        self.astronomy = None
-        self.engineering = None
-
         print("Build Constructor")
         # Finished initializing the basic building object
 
-    def load_ontologies(self):
-        import simplejson as json
-        import platform
-        path = os.path.abspath(os.path.join(CURRENT_DIR, os.pardir))
-        if platform.system() == 'Linux' or platform.system() == 'Darwin':
-            ''' linux path '''
-            path += '/SensorOntology/'
-        else:
-            '''  windows path  '''
-            path += '\\SensorOntology\\'
 
-        # Loading  Sensors ontology from file
-        with open(path + "SpaceSensor_json-ld_v2.json", "r", encoding="utf8") as jsonld:
-            self.sensors = json.loads(jsonld.read())
-
-        # Loading  Chronos ontology from file
-        with open(path + "ChronosOntology.json", "r", encoding="utf8") as jsonld:
-            self.chronos = json.loads(jsonld.read())
-
-        # Loading  Astronomy ontology from file
-        with open(path + "Astronomy.json", "r", encoding="utf8") as jsonld:
-            self.astronomy = json.loads(jsonld.read())
-
-        # Loading  Engineering ontology from file
-        with open(path + "Engineering.json", "r", encoding="utf8") as jsonld:
-            self.engineering = json.loads(jsonld.read())
-
-        sensors = self.sensors['defines']
-        chronos = self.chronos['defines']
-        astronomy = self.astronomy['defines']
-        engineering = self.engineering['defines']
-
-        ontologies = sensors + chronos + astronomy + engineering
-        return ontologies
-
-    #
-    # Starting of the main algorithm methods
-    #
-
-    # Step 1: add ontologies to the datastore
-    def add_ontologies(self):
-        """
-        Takes ontologies from the files and stores them as single documents in the 'ontology' collection.
-        All the basic concepts and physical properties are initialized also as a 'dbpediadocs' document connected
-         to the ontology documents with skos:exactMatch property
-        :return:
-        """
-        ontologies = self.load_ontologies()
-
-        from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
-        from datastoreapi.datastoreErrors import DocumentExists
-
-        # from pprint import pprint
-        # pprint(ontologies)
-
-        if self.mongod.ontology.find().count() == 0:
-            for doc in ontologies:
-                id_ = self.mongod.ontology.insert(doc)
-                if "owl:sameAs" in doc.keys() and doc["owl:sameAs"].find('dbpedia.org') != -1:
-                    new_url = doc["owl:sameAs"]
-                    try:
-                        new = PublicRepoDocument(dbpedia=new_url)
-                        resource = new.store_wiki_resource()
-                        del new
-                    except DocumentExists:
-                        try:
-                            look_for = PRAMANTHA_URL % ('dbpediadocs', tools.from_dbpedia_url_return_slug(doc["owl:sameAs"]))
-                            print(look_for)
-                            resource = self.mongod.base.find_one({"@id": look_for})
-                        except Exception as e:
-                            print(str(e) + " link_webpage_to_kwd_by_abstract() no dbpediadocs found")
-                            continue
-                    if resource is not None:
-                        self.connection.append_link_to_mongodoc(resource, "skos:exactMatch", doc, "base")
-
-                print(id_)
-
-        return None
-
-    # Step 2: add SKOS concepts
+    # Step 1: add SKOS concepts
     @staticmethod
     def add_all_concepts(test=False):
         """
@@ -518,7 +434,7 @@ class Build:
                 for a in results:
                     slug = a['title'].replace(' ', '_')
                     dbpedia = DBPEDIA_URL % slug
-                    chronos_id = PRAMANTHA_URL % ("dbpediadocs", slug)
+                    chronos_id = RESOURCE_URL % ("dbpediadocs", slug)
                     new = PublicRepoDocument(dbpedia=dbpedia)
                     try:
                         new_doc = new.store_wiki_resource()
@@ -560,12 +476,12 @@ class Build:
             return None
 
         for res in crawled:
-            at_id = PRAMANTHA_URL % ("urls", res["hashed"])
+            at_id = RESOURCE_URL % ("urls", res["hashed"])
             check = self.mongod.webpages.find_one({"@id": at_id})
             if check is not None:
                 # update keyword (append to chronos:keyword)
                 kwd = self.mongod.base.find_one({
-                    "@id": PRAMANTHA_URL % ("keywords", res["keyword"])})
+                    "@id": RESOURCE_URL % ("keywords", res["keyword"])})
                 if kwd is not None:
                     try:
                         self.connection.append_link_to_mongodoc(check, "schema:about", kwd, "webpages")

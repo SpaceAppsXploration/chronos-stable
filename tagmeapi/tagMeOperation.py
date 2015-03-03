@@ -130,7 +130,7 @@ class TagMeOperation:
             doc = to_store.store_wiki_resource()
             print("DOC STORED")
         except DocumentExists as e:
-            doc = self.mongod.base.find_one({"@id": PRAMANTHA_URL % ("dbpediadocs", slug)})
+            doc = self.mongod.base.find_one({"@id": RESOURCE_URL % ("dbpediadocs", slug)})
             print("DOC FETCHED: " + dbpedia)
 
         pprint(doc)  #complete doc

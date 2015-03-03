@@ -59,7 +59,7 @@ class CHRONOSmission:
 
         doc["skos:prefLabel"] = self.mission_obj["name"]
         doc["chronos:codename"] = self.mission_obj["codename"]
-        doc["@id"] = PRAMANTHA_URL % ("missions", label)
+        doc["@id"] = RESOURCE_URL % ("missions", label)
 
         dbpedia = DBPEDIA_URL % label
 
@@ -129,13 +129,13 @@ class CHRONOSmission:
                     pprint("INSTRUMENTS ALREADY ADDED TO MISSION >>>>:" + str(check["@id"]))
                 return None
 
-        if not self.db.base.find_one({"@id": PRAMANTHA_URL % ("missions", slug)}):
+        if not self.db.base.find_one({"@id": RESOURCE_URL % ("missions", slug)}):
             # create the basic document about the launch
             new = BasicDoc()
             doc = new.blank_launch()
             del new
 
-            doc["@id"] = PRAMANTHA_URL % ("missions", slug)
+            doc["@id"] = RESOURCE_URL % ("missions", slug)
             doc["skos:prefLabel"] = name
             doc["chronos:year"] = year
             doc["chronos:slug"] = slug

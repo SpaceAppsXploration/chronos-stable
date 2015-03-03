@@ -1,7 +1,7 @@
 __author__ = ['lorenzo@pramantha.net']
 
 dump_planet = {
-        "@type" : "http://pramantha.eu/ontology/dbpediadoc",
+        "@type" : "http://pramantha.eu/chronos/ontology/dbpediadoc",
         "chronos:relatedMatch" : [ ],
         "schema:provider" : [
                 {

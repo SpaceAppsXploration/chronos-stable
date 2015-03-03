@@ -126,7 +126,7 @@ class WebPages:
                 avoid = '_-'.encode(encoding='UTF-8')
                 hashed = b64encode(to_hash, avoid).decode(encoding='UTF-8')
 
-            obj_id = PRAMANTHA_URL % ("urls", hashed)
+            obj_id = RESOURCE_URL % ("urls", hashed)
 
             if self.db.urls.find_one({"@id": obj_id}) is not None:
                 return
@@ -152,10 +152,10 @@ class WebPages:
 
             if self.obj is not None:
                 kwd = self.db.base.find_one({
-                    "@id": PRAMANTHA_URL % ("keywords", self.obj["keyword"].lower().replace(' ', '+'))})
+                    "@id": RESOURCE_URL % ("keywords", self.obj["keyword"].lower().replace(' ', '+'))})
             else:
                 kwd = self.db.base.find_one({
-                    "@id": PRAMANTHA_URL % ("keywords", single_keyword)})
+                    "@id": RESOURCE_URL % ("keywords", single_keyword)})
             if kwd is not None:
                 try:
                     self.connection.append_link_to_mongodoc(url_doc, "schema:about", kwd, "webpages")
@@ -192,7 +192,7 @@ class WebPages:
                     # for a in annotations: retrieve or store wiki doc
                     for a in results:
                         dbpedia = DBPEDIA_URL % a['title'].replace(' ', '_')
-                        chronos_id = PRAMANTHA_URL % ("dbpediadocs", a['title'].replace(' ', '_'))
+                        chronos_id = RESOURCE_URL % ("dbpediadocs", a['title'].replace(' ', '_'))
                         new = PublicRepoDocument(dbpedia=dbpedia)
                         try:
                             new_doc = new.store_wiki_resource()

@@ -45,7 +45,7 @@ class CHRONOStarget:
         del new
 
         # set basic keys
-        doc["@id"] = PRAMANTHA_URL % ("targets", self.obj["slug"])
+        doc["@id"] = RESOURCE_URL % ("targets", self.obj["slug"])
         doc["@type"] = self.obj["body_type"]
         doc["owl:sameAs"][0]["@value"] = DBPEDIA_URL % (self.obj["slug"])
         xml = tools.get_resource_url_from_jsond_url(self.obj["slug"])

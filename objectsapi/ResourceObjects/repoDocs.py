@@ -51,7 +51,7 @@ class PublicRepoDocument():
             label = tools.from_dbpedia_url_return_slug(self.dbpedia)
             sparql = DBPEDIA_RESOURCE % label
 
-            url = PRAMANTHA_URL % ("dbpediadocs", label)
+            url = RESOURCE_URL % ("dbpediadocs", label)
             check = self.db.base.find_one({"@id": url})
             if not check:
                 pprint("Storing Resource:" + url)

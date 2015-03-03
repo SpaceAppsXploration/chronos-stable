@@ -20,7 +20,7 @@ class SKOSconcepts():
         self.connection = Wrapper()
         self.db = self.connection.return_mongo()
         self.provider = self.db.base.find_one({
-            "@id": PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
+            "@id": RESOURCE_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
     def find_or_create_scheme(self, at_id, scheme):
@@ -65,7 +65,7 @@ class SKOSconcepts():
         print(">>>>>>>>>>>>>>>>>>>>> pref_labe: " + pref_label)
         label = pref_label.lower()
         url_label = label.replace(' ', '+').replace(',', '')
-        this_id = PRAMANTHA_URL % (category, url_label)
+        this_id = RESOURCE_URL % (category, url_label)
 
         return pref_label, this_id
 
@@ -78,7 +78,7 @@ class SKOSconcepts():
         """
         label = keyword.lower()
         label = label.replace(' ', '+').replace(',', '')
-        this_id = PRAMANTHA_URL % (category, label)
+        this_id = RESOURCE_URL % (category, label)
 
         return label, this_id
 

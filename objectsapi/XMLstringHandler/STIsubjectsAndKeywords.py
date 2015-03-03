@@ -31,7 +31,7 @@ class STIsubject():
         self.top_concept["chronos:code"] = self.code
 
         self.provider = self.db.base.find_one({
-            "@id": PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
+            "@id": RESOURCE_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
         self.concept_utilities = SKOSconcepts()  # instance of the concept to store into a document

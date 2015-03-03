@@ -23,7 +23,7 @@ class XMLskos():
         self.mongod = self.connection.return_mongo()
         self.xml_string = xml_string
         self.provider = self.mongod.base.find_one({
-            "@id": PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
+            "@id": RESOURCE_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
     def find_concept(self, code):
@@ -53,7 +53,7 @@ class XMLskos():
         int_code = int(code)
         if int_code == 100:
             # concept is the STI itself
-            doc_id = PRAMANTHA_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
+            doc_id = RESOURCE_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
             doc = {
                 "@language": "en",
                 "@type": SKOS_CONCEPT,

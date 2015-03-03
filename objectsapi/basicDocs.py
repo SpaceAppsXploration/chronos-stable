@@ -26,7 +26,7 @@ class BasicDoc():
         """
         return {
             "@id": None,
-            "@type": PRAMANTHA_URL % ("ontology", "dbpediadoc"),
+            "@type": ONTOLOGY_URL % "chronos" + "/dbpediadoc",
             "@language": "en",
             "schema:provider": [dict({
                 "@value": "http://dbpedia.org/resource/DBpedia",
@@ -69,7 +69,7 @@ class BasicDoc():
         return {
             "@id": None,                                             # 'subject' of the RDF triple: in this doc CHRONOS_URL % ("missions", <slug>)
             "skos:prefLabel": None,                                  # full name of mission: "Apollo 11"
-            "@type": PRAMANTHA_URL % ("ontology", "mission"),      # type of the document, in this case chronos:mission
+            "@type": ONTOLOGY_URL % "chronos" + "mission",      # type of the document, in this case chronos:mission
             "rdf:type": [],                                          # rdf types as found in wikipedia
             "chronos:slug": None,                                    # if mission in wikipedia, this is the wikipedia title. Else is None
             "chronos:missionEra": None,                              # string: present, apst, future, concept
@@ -99,7 +99,7 @@ class BasicDoc():
         return {
             "@id": None,
             "skos:prefLabel": None,
-            "@type": PRAMANTHA_URL % ("ontology", "launch"),
+            "@type": ONTOLOGY_URL % "chronos" + "/launch",
             "rdf:type": [],
             "chronos:year": None,
             "chronos:slug": None,
@@ -255,7 +255,7 @@ class BasicDoc():
         """
         return {
             "@language": "en",
-            "@type": PRAMANTHA_URL % ("ontology", "keyword"),
+            "@type": ONTOLOGY_URL % "chronos" + "/keyword",
             "schema:provider": {},
             "chronos:group": "keywords",
             "skos:prefLabel": None,  # full keyword with parenthesis and commas
@@ -277,7 +277,7 @@ class BasicDoc():
         return {
             "@id": None,
             "chronos:base64": None,
-            "@type": PRAMANTHA_URL % ("ontology", "webpage"),
+            "@type": ONTOLOGY_URL % "chronos" + "/webpage",
             "schema:url": {
                 "@value": None,
                 "@type": "https://schema.org/URL"
@@ -311,7 +311,7 @@ class BasicDoc():
     def blank_event():
         return {
             "@id": None,
-            "@type": PRAMANTHA_URL % ("ontology", "event"),
+            "@type": ONTOLOGY_URL % "chronos" + "/event",
             "chronos:group": "events",
             "chronos:eventContent": None,
             "chronos:eventdate": None,

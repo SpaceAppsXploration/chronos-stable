@@ -52,7 +52,7 @@ class CHRONOSEvent:
     
         for e in self.js_obj:
             hashed = b64encode(str(e["mission"]+str(e["id"])).encode(encoding='UTF-8'), avoid).decode(encoding='UTF-8')
-            this_id = PRAMANTHA_URL % ("events", hashed)
+            this_id = RESOURCE_URL % ("events", hashed)
 
             # basic event document
             event = BasicDoc.blank_event()

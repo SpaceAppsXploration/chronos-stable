@@ -25,10 +25,6 @@ class TestKBcreation(unittest.TestCase):
         #
         # Test Layer Zero
         #
-        from tests.tests_layer_zero.test_add_ontologies import Test
-        t = Test()
-        t. test_add_ontologies()
-        del t
 
         from tests.tests_layer_zero.test_add_concepts import Test
         t = Test()

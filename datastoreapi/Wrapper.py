@@ -95,7 +95,8 @@ class Wrapper(object):
 # resource repositories links
 DBPEDIA_URL = "http://dbpedia.org/data/%s.jsond"        # string-substitute with wikipage title (slug)
 DBPEDIA_RESOURCE = "http://dbpedia.org/resource/%s"     # string-substitute with wikipage title (slug)
-PRAMANTHA_URL = "http://pramantha.eu/%s/%s"             # domain for local resources (chronos:group, slug)
+ONTOLOGY_URL = "http://ontology.projectchronos.eu/%s/"  # domain for ontologies
+RESOURCE_URL = "http://api.pramantha.net/%s/%s"         # domain for local resources (chronos:group, slug)
 CHRONOS_GROUPS = ['missions', 'keywords', 'events', 'targets',
                   'dbpediadocs', 'areas', 'divisions', 'schemes',
                   'subjects', 'urls', 'events']
@@ -120,8 +121,8 @@ CHRONOS_CONTEXT = dict(
         "schema": "http://schema.org/",
         "dbpedia": "http://dbpedia.org/property/",
         "owl": "http://www.w3.org/2002/07/owl#",
-        "chronos": "http://pramantha.eu/ontology/",
-        "@base": "http://pramantha.eu/ontology"
+        "chronos": "http://pramantha.eu/chronos/ontology/",
+        "@base": "http://pramantha.eu/chronos/ontology"
     }
 )
 
@@ -133,7 +134,7 @@ SENSORS_ONTOLOGY_CONTEXT = dict(
         "dbpedia": "http://dbpedia.org/property/",
         "owl": "http://www.w3.org/2002/07/owl#",
         "chronos": "http://pramantha.eu/ontology",
-        "sensor": "http://pramantha.eu/ontology/sensors/",
-        "@base": "http://pramantha.eu/ontology/sensors"
+        "sensor": "http://pramantha.eu/sensors/ontology/",
+        "@base": "http://pramantha.eu/sensors/ontology"
     }
 )
