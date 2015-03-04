@@ -1,5 +1,4 @@
-import time
-import json
+import simplejson as json
 from pprint import pprint
 
 from datastoreapi.Wrapper import *
@@ -14,7 +13,6 @@ class CHRONOSmission:
     Take care of storing the totality of missions, merging missions from the old DB and DBpedia 'Launches' category
 
     :param obj: input dictionary
-    :param db: Mongo client
 
     :method store_mission: store from old database file, has typical fields to handle
     :method store_launch: store from DBpedia file, has typical fields to handle
@@ -67,6 +65,14 @@ class CHRONOSmission:
         xml = tools.get_resource_url_from_jsond_url(dbpedia)
         doc["owl:sameAs"].append({"@value": xml, "@type": RDF_RESOURCE})
 
+        from toolbox.pediacache import DBpediaCache
+        new = DBpediaCache()
+        try:
+            new.get_or_retrieve_and_store(label)
+        except Exception:
+            print("CANNOT FIND SPARQL FOR CACHING!")
+            pass
+
         if self.db.base.find_one({"@id": doc["@id"]}) is None:
             pprint("STORE MISSION: " + str(self.mission_obj["name"]))
             # print(doc)
@@ -101,7 +107,7 @@ class CHRONOSmission:
         # load res
         try:
             res = tools.retrieve_json(self.mission_obj["json-uri"])
-        except (ConnectionError, json.JSONDecoder, json.JSONEncoder):
+        except (ConnectionError, json.JSONDecodeError):
             print("ERROR: LAUNCH >>> " + str(self.mission_obj["json-uri"]) + " >>> DBPEDIA IS PROBABLY DOWN")
             return
 

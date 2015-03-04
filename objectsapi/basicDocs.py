@@ -26,7 +26,7 @@ class BasicDoc():
         """
         return {
             "@id": None,
-            "@type": ONTOLOGY_URL % "chronos" + "/dbpediadoc",
+            "@type": ONTOLOGY_URL % "chronos" + "dbpediadoc",
             "@language": "en",
             "schema:provider": [dict({
                 "@value": "http://dbpedia.org/resource/DBpedia",
@@ -99,7 +99,7 @@ class BasicDoc():
         return {
             "@id": None,
             "skos:prefLabel": None,
-            "@type": ONTOLOGY_URL % "chronos" + "/launch",
+            "@type": ONTOLOGY_URL % "chronos" + "launch",
             "rdf:type": [],
             "chronos:year": None,
             "chronos:slug": None,
@@ -123,12 +123,13 @@ class BasicDoc():
             "@id": None,
             "@type": None,                                           # can be 'Satellite', 'Planet' from wikipwdia ontology
             "@language": "en",
-            "owl:sameAs": [{
-                "@value": None,
-                "@type": RDF_RESOURCE,                           # OData resource .jsond
-                "schema:provider": {
-                    "@value": "http://dbpedia.org/resource/DBpedia",
-                    "@type": RDF_RESOURCE
+            "owl:sameAs": [
+                {
+                    "@value": None,
+                    "@type": RDF_RESOURCE,                           # OData resource .jsond
+                    "schema:provider": {
+                        "@value": "http://dbpedia.org/resource/DBpedia",
+                        "@type": RDF_RESOURCE
                     }
                 },
                 {
@@ -255,7 +256,7 @@ class BasicDoc():
         """
         return {
             "@language": "en",
-            "@type": ONTOLOGY_URL % "chronos" + "/keyword",
+            "@type": ONTOLOGY_URL % "chronos" + "keyword",
             "schema:provider": {},
             "chronos:group": "keywords",
             "skos:prefLabel": None,  # full keyword with parenthesis and commas
@@ -277,7 +278,7 @@ class BasicDoc():
         return {
             "@id": None,
             "chronos:base64": None,
-            "@type": ONTOLOGY_URL % "chronos" + "/webpage",
+            "@type": ONTOLOGY_URL % "chronos" + "webpage",
             "schema:url": {
                 "@value": None,
                 "@type": "https://schema.org/URL"
@@ -311,7 +312,7 @@ class BasicDoc():
     def blank_event():
         return {
             "@id": None,
-            "@type": ONTOLOGY_URL % "chronos" + "/event",
+            "@type": ONTOLOGY_URL % "chronos" + "event",
             "chronos:group": "events",
             "chronos:eventContent": None,
             "chronos:eventdate": None,

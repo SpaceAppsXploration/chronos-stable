@@ -15,7 +15,6 @@ class DBpediaCache:
         self.connection = Wrapper()
         self.db = self.connection.return_mongo()
 
-
     def get_or_retrieve_and_store(self, slug):
         """
         Checks the DBpediacache collection and return or retrieve and return a dictionary with the resource
@@ -48,7 +47,7 @@ class DBpediaCache:
             # retrieve and store
             try:
                 json_ld = tools.retrieve_from_sparql(tools.make_resource_url_from_slug(slug))
-            except (customErrors.CannotSPARQL, Exception) as e:
+            except (customErrors.CannotSPARQL, Exception, ConnectionError) as e:
                 raise e
 
             __insert_cache_doc(at_id, json_ld)

@@ -237,7 +237,7 @@ class Build:
                 else:
                     raise DocumentExistNot("EVENTS API: This mission is not in the DB")
             # if test, dont raise the error adn stop after some events are stored
-            if i > 20:
+            if test and i > 20:
                 break
 
         return None

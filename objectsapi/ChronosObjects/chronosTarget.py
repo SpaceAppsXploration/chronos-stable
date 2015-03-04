@@ -44,6 +44,15 @@ class CHRONOStarget:
         doc = new.blank_target()
         del new
 
+        from toolbox.pediacache import DBpediaCache
+        new = DBpediaCache()
+        try:
+            new.get_or_retrieve_and_store(self.obj["slug"])
+        except Exception:
+            print("CANNOT FIND SPARQL FOR CACHING!")
+            pass
+        del new
+
         # set basic keys
         doc["@id"] = RESOURCE_URL % ("targets", self.obj["slug"])
         doc["@type"] = self.obj["body_type"]
