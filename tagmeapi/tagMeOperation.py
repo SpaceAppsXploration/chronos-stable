@@ -20,6 +20,24 @@ class TagMeOperation:
         self.connection = Wrapper()
         self.mongod = self.connection.return_mongo()
 
+    include = ['Aerospace', 'Astrophysics', 'Cosmic_ray', 'Spaceflight', 'Spacecraft', 'Avionics', "Command", "control",
+            "Geodesy", "Geographical", 'Astronomical', 'Astronomy', "flight", 'Aircraft', 'Atmosphere', "experiments", "Subfields"
+            "Navigation", "Satellite", "spaceflight", "Industry", "Communications", "Physics", "physical", "NASA", "ESA", "JAXA"]
+
+
+    @classmethod
+    def return_gen_lowered(cls):
+        return [x.lower() for x in cls.include]
+
+    @classmethod
+    def semantic_test(cls, annotation):
+        if "rho" in annotation.keys() \
+                and 0.40 < float(annotation["rho"]) < 0.72 \
+                or any([True for c in annotation["dbpedia_categories"]
+                        for w in c.split() if w.lower() in cls.return_gen_lowered()]):
+            return True
+        return False
+
     def insert_sections(self):
         """
         Take the titles of general scopes and insert them as a dbpedia docs in mongo
@@ -45,7 +63,7 @@ class TagMeOperation:
         return None
 
     @staticmethod
-    def check_if_rho_fits_spaceknowledge(output, level=0.42):
+    def check_if_rho_fits_spaceknowledge(output, level=0.39):
         """
         Takes as input the results of a TagMeService.relate() function and check if the mean of resulting rhos is
         above a level. Used to check if a term is semantically related to a list of fields
@@ -61,7 +79,7 @@ class TagMeOperation:
                 total += float(o["rel"])
             mean = total / count
             print(mean)
-            if mean > level:
+            if level < mean < 0.59:
                 return True
         return False
 
@@ -80,23 +98,28 @@ class TagMeOperation:
         # keyword > clean keyword (no parenthesis, no commas)
         label = c["skos:prefLabel"].replace("(", "").replace(")", "").replace(",", "")
         print("KEYWORD FROM DB: " + label)
-        # spot rho>.49
-        check = TagMeService.check_spotting(label)
+        check = TagMeService.check_spotting(label)  # return
         print("SPOTTING: " + str(check))
         if check["spotted"]:
             spotted = check["value"]["spots"]
             for sp in spotted:
                 # for spot in keyword: retrieve taggings return annotations
                 term = sp["spot"]
-                annotations = TagMeService.retrieve_taggings(term)["annotations"]
-                for a in annotations:
-                    # make the wikipedia official title in url
-                    slug = a["title"].replace(" ", "_")
-                    print(term, slug)
-                    # find if this term is related to space arguments
-                    if self.check_if_rho_fits_spaceknowledge(TagMeService.relate(titles=slug, min_rho=0.39)):
-                        # store or modify dbpediadoc with chronos:keyword to the keyword
-                        self.store_annotation_for_keyword(annotation=a, keyword=c["skos:prefLabel"])
+                try:
+                    annotations = TagMeService.retrieve_taggings(term)["annotations"]
+                except BadRequest as e:
+                    raise e
+                if annotations:
+                    for a in annotations:
+                        # make the wikipedia official title in url
+                        slug = a["title"].replace(" ", "_")
+                        print(term, slug)
+                        # find if this term is related to space arguments
+
+                        if self.check_if_rho_fits_spaceknowledge(TagMeService.relate(titles=slug, min_rho=0.39)):
+                            #    # store or modify dbpediadoc with chronos:relKeyword to the keyword
+                            # if self.semantic_test(a):
+                            self.store_annotation_for_keyword(annotation=slug, keyword=c["skos:prefLabel"])
         else:
             raise TextNotSpotted('No terms in the text to spot')
 
@@ -107,7 +130,7 @@ class TagMeOperation:
         Take an annotation from the "tagging" API and create or modify a dbpediadoc in Mongo linking it with
         "chronos:relKeyword" property to the keyword
         ------------------------------------------------------------------------------------
-        :param annotation: the annotation dictionary as sent by TagMe
+        :param annotation: the annotation slug as sent by TagMe
         :param keyword: the full NASA keyword from which this annotation is taken
         :return: Mongo document ("chronos:group": "dbpediadocs") that is the new or modified document
         """
@@ -115,11 +138,11 @@ class TagMeOperation:
         print(annotation, keyword)
 
         # take the title from the API response and get the slug
-        slug = annotation["title"].replace(" ", "_")
+        slug = annotation.replace(" ", "_")
         # dbpedia json url
         dbpedia = tools.make_resource_url_from_slug(slug)
 
-        if slug in to_be_excluded or float(annotation["rho"]) < 0.09:
+        if slug in to_be_excluded:
             # slug is in the set of excluded pedia terms
             return
 
@@ -142,8 +165,8 @@ class TagMeOperation:
                                         {"chronos:group": "subjects"}
                                     ]})
         print("KEYWORD: ")
-        pprint(kw["@id"])
         if kw is not None:
+            pprint(kw["@id"])
             try:
                 id_ = self.connection.append_link_to_mongodoc(doc, "chronos:relKeyword", kw, "base")["_id"]
             except DocumentExists:
@@ -221,6 +244,102 @@ class TagMeOperation:
                                     except DocumentExists:
                                         continue
                                 continue
+
+        return None
+
+    def tag_and_link_resources_to_mission(self, mssn, txt):
+        # retrieve_taggings(body of the resource)
+        # find annotations in the db
+        # store link: annotation objects["chronos:relMission"] = mission object
+        try:
+            found = TagMeService.retrieve_taggings(txt)
+        except BadRequest:
+            raise BadRequest('retrieve_taggings in semantic_links_for_missions() Failed')
+
+        # print(found)
+        if found["annotations"]:
+            for f in found["annotations"]:
+                slug = f["title"].replace(" ", "_")
+                if self.check_if_rho_fits_spaceknowledge(TagMeService.relate(titles=slug, min_rho=0.39)):
+                    try:
+                        alt_label = f["title"].replace(" ", "_")
+                        print(alt_label)
+                    except KeyError:
+                        continue
+                    doc = self.mongod.base.find_one({"skos:altLabel": alt_label})
+                    if not doc:
+                        # store resource and link resource[chronos:mission] = mission document
+                        new_url = DBPEDIA_URL % alt_label
+                        new = PublicRepoDocument(dbpedia=new_url)
+                        new_doc = new.store_wiki_resource()
+                        del new
+                        if not new_doc:
+                            continue
+                        self.connection.append_link_to_mongodoc(new_doc, "chronos:relMission", mssn, "base")
+
+                    else:
+                        # link resource[chronos:mission] = mission document
+                        try:
+                            self.connection.append_link_to_mongodoc(doc, "chronos:relMission", mssn, "base")
+                        except DocumentExists:
+                            pass
+
+        return None
+
+    def tag_and_link_mission_to_keyword(self, mssn, txt):
+        # retrieve_taggings(body of the resource)
+        # find annotations in the db
+        # store link: annotation mission["chronos:relKeyword"] = keyword
+        mission = self.mongod.base.find_one({"@id": mssn["@id"]})
+
+        def find_linked_keyword(pedia):
+            s = "/" + pedia + "/"
+            res = self.mongod.base.find_one({"chronos:group": "dbpediadocs", "owl:sameAs.0.@value": s, "chronos:relKeyword": {"$ne": []}})
+            if res is not None:
+                result = []
+                for rs in res["chronos:relKeyword"]:
+                    result.append(self.mongod.find_one({"chronos:group": "dbpediadocs", "@id": rs["@id"]}))
+                return result
+            return None
+
+        try:
+            found = TagMeService.retrieve_taggings(txt)
+        except BadRequest:
+            raise BadRequest('retrieve_taggings in semantic_links_for_missions() Failed')
+
+        # print(found)
+        scopes = self.return_gen_lowered()
+        if found["annotations"]:
+            for f in found["annotations"]:
+                slug = f["title"].replace(" ", "_")
+                if self.check_if_rho_fits_spaceknowledge(TagMeService.relate(titles=slug, min_rho=0.39)):
+                    print(f["rho"])
+                    try:
+                        alt_label = f["title"].replace(" ", "_")
+                        print(alt_label)
+                    except KeyError:
+                        continue
+                    resource = find_linked_keyword(DBPEDIA_RESOURCE % alt_label)
+                    if isinstance(resource, list):
+                        for r in resource:
+                            # link resource[chronos:mission] = mission document
+                            print(">>> RESOURCE: " + r["@id"])
+                            try:
+                                self.connection.append_link_to_mongodoc(mission, "chronos:relKeyword", r, "base")
+                            except DocumentExists:
+                                continue
+                    elif resource is None:
+                        # store resource and link resource[chronos:mission] = mission document
+                        new_url = DBPEDIA_URL % alt_label
+                        new = PublicRepoDocument(dbpedia=new_url)
+                        try:
+                            new_doc = new.store_wiki_resource()
+                        except DocumentExists:
+                            continue
+                        del new
+                        if not new_doc:
+                            continue
+                        self.connection.append_link_to_mongodoc(new_doc, "chronos:relMission", mission, "base")
 
         return None
 

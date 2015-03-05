@@ -10,7 +10,6 @@ from pymongo.errors import CollectionInvalid
 from datastoreapi.Wrapper import *
 from toolbox import tools
 
-
 class Build:
     """
     This class contains all the methods used in "main" package's steps
@@ -41,7 +40,6 @@ class Build:
 
         # create collections in DB
         try:
-            self.mongod.create_collection("ontology")
             self.mongod.create_collection("base")
             self.mongod.create_collection("crawling", autoIndexId=False)
             self.mongod.create_collection("webpages")
@@ -141,7 +139,7 @@ class Build:
             try:
                 new.link_annotated_keywords_and_subjects(k)
             except Exception as e:
-                print("Tagging Keyword: " + str(e))
+                print(Exception(">>>>>>>>> ERROR Tagging Keyword: " + str(e)))
                 continue
 
         keywords.close()
@@ -268,60 +266,26 @@ class Build:
 
     def semantic_links_for_missions(self, test=False):
         from toolbox import surfing
-        from tagmeapi.tagMeService import TagMeService, BadRequest
-        from objectsapi.ResourceObjects.repoDocs import PublicRepoDocument
         from datastoreapi.datastoreErrors import DocumentExists, DocumentExistNot
-
-        def tag_and_link_resources_to_mission(mssn, txt):
-            # retrieve_taggings(body of the resource)
-            # find annotations in the db
-            # store link: annotation objects["chronos:relMission"] = mission object
-            try:
-                found = TagMeService.retrieve_taggings(txt)
-            except BadRequest:
-                raise BadRequest('retrieve_taggings in semantic_links_for_missions() Failed')
-
-            # print(found)
-
-            if found["annotations"]:
-                for f in found["annotations"]:
-                    try:
-                        alt_label = f["title"].replace(" ", "_")
-                    except KeyError:
-                        continue
-                    doc = self.mongod.base.find_one({"skos:altLabel": alt_label})
-                    if not doc:
-                        # store resource and link resource[chronos:mission] = mission document
-                        new_url = DBPEDIA_URL % alt_label
-                        new = PublicRepoDocument(dbpedia=new_url)
-                        new_doc = new.store_wiki_resource()
-                        del new
-                        if not new_doc:
-                            return
-                        self.connection.append_link_to_mongodoc(new_doc, "chronos:relMission", mssn, "base")
-
-                    else:
-                        # link resource[chronos:mission] = mission document
-                        try:
-                            self.connection.append_link_to_mongodoc(doc, "chronos:relMission", mssn, "base")
-                        except DocumentExists:
-                            pass
-
-            return None
+        from tagmeapi.tagMeOperation import TagMeOperation
 
         missions = self.mongod.base.find({"chronos:group": "missions"}, timeout=False)
 
         for i, m in enumerate(missions):
             # get resource
             # get body of the resource
-            to_crawl = m["owl:sameAs"][0]["@value"]  # "http://dbpedia.org/data/Clementine_(spacecraft).jsond"
+            to_crawl = m["owl:sameAs"][0]["@value"]
             try:
                 new = surfing.JsonLD()
-                text = new.get_body_text_from_dbpedia_json(to_crawl)
+                text = new.get_body_text_from_dbpedia_jsonld(to_crawl)
                 del new
             except DocumentExistNot:
                 continue
-            tag_and_link_resources_to_mission(m, text)
+
+            new = TagMeOperation()
+            new.tag_and_link_resources_to_mission(m, text)
+            new.tag_and_link_mission_to_keyword(m, text)
+            del new
             if test and i > 15:
                 break
 
@@ -420,7 +384,11 @@ class Build:
             """
 
             # retrieve annotations in the url's abstract
-            results = TagMeService.retrieve_taggings(docstring, method='POST')
+            try:
+                results = TagMeService.retrieve_taggings(docstring, method='POST')
+            except Exception:
+                return None
+
             print(docstring)
             if len(results['annotations']) != 0:
                 try:

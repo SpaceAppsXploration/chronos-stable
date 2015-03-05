@@ -23,8 +23,9 @@ class TagMeService:
 
     @staticmethod
     def return_gen_scopes():
-        return ['Aerospace', 'Astrophysics', 'Cosmic_ray', 'Spaceflight', 'Spacecraft',
-                'Astronomical_object', 'Astronomy', 'Engineering', 'Aircraft', 'Atmosphere']
+        return ['Aerospace', 'Astrophysics', 'Cosmic_ray', 'Spaceflight', 'Spacecraft', 'Avionics', "Command_and_control",
+                "Geodesy", 'Astronomical_object', 'Astronomy', 'Engineering', 'Aircraft', 'Atmosphere',
+                "Navigation","Radio_navigation"]
 
     @staticmethod
     def check_spotting(text):

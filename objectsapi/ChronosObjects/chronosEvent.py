@@ -51,7 +51,7 @@ class CHRONOSEvent:
                             mssn = self.db.base.find_one({"chronos:group": "missions", "chronos:slug": exceptions[name]})
     
         for e in self.js_obj:
-            hashed = b64encode(str(e["mission"]+str(e["id"])).encode(encoding='UTF-8'), avoid).decode(encoding='UTF-8')
+            hashed = b64encode(str(e["mission"] + str(e["id"])).encode(encoding='UTF-8'), avoid).decode(encoding='UTF-8')
             this_id = RESOURCE_URL % ("events", hashed)
 
             # basic event document
