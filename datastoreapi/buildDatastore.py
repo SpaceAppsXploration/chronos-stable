@@ -233,7 +233,7 @@ class Build:
                 if test:
                     continue
                 else:
-                    raise DocumentExistNot("EVENTS API: This mission is not in the DB")
+                    print(DocumentExistNot("EVENTS API: This mission is not in the DB"))
             # if test, dont raise the error adn stop after some events are stored
             if test and i > 20:
                 break
@@ -284,7 +284,6 @@ class Build:
 
             new = TagMeOperation()
             new.tag_and_link_resources_to_mission(m, text)
-            new.tag_and_link_mission_to_keyword(m, text)
             del new
             if test and i > 15:
                 break

@@ -74,7 +74,7 @@ class TagMeService:
             return {"timestamp": time.time(), "time": 0, "api": "tag", "annotations": [], "lang": "en"}
         params = {
             "key": api_key,
-            "text": quote(term),
+            "text": term,
             "include_categories": True,
             "include_abstract": True,
             "include_all_spots": True
@@ -150,10 +150,10 @@ class TagMeService:
                 raise Exception("TagmeService.relate(): Probably wrong Wikipedia title for 'titles' arg")
             output = [r for r in results["result"] if float(r["rel"]) > min_rho]
             return output
-        elif results["errors"] != 0 and "err" in results.keys() and results["err"] == "Unable to parse second title":
+        elif results["errors"] != 0 and "err" in results.keys() and results["err"] == "Unable to parse second title" or results["err"] == "Unable to parse first title":
             print(BadRequest("Cannot find title in TagMe: " + str(results)))
             return None
-        elif results["errors"] != 0 and "result" in results.keys() and results["result"][0]["err"] == "Unable to parse second title":
+        elif results["errors"] != 0 and "result" in results.keys() and results["result"][0]["err"] == "Unable to parse second title" or results["err"] == "Unable to parse first title":
             print(BadRequest("Cannot find title in TagMe: " + str(results)))
             return None
 

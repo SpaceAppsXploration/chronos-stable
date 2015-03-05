@@ -25,7 +25,7 @@ class Test(unittest.TestCase):
         cls.built.link_targets_and_events(test=test)
 
     @classmethod
-    def test_semantic_links_for_missions(cls, test=True):
+    def test_semantic_links_for_missions(cls, test=False):
         cls.built.semantic_links_for_missions(test=test)
 
     @classmethod
