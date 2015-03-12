@@ -24,8 +24,9 @@ class TagMeService:
     @staticmethod
     def return_gen_scopes():
         return ['Aerospace', 'Astrophysics', 'Cosmic_ray', 'Spaceflight', 'Spacecraft', 'Avionics', "Command_and_control",
-                "Geodesy", 'Astronomical_object', 'Astronomy', 'Engineering', 'Aircraft', 'Atmosphere',
-                "Navigation","Radio_navigation"]
+                "Geodesy", 'Astronomical_object', 'Astronomy', 'Aircraft', 'Atmosphere',
+                "Navigation", "Radio_navigation", "Satellite", "Spaceflight", "Physics",
+                "NASA", "Planetary_science"]
 
     @staticmethod
     def check_spotting(text):
@@ -145,17 +146,17 @@ class TagMeService:
         except (Exception, ValueError):
             raise BadRequest('Error in connection or in JSON parsing the response from TagMe Relating API')
 
-        if results["errors"] == 0:
-            if len(results["result"]) == 0:
-                raise Exception("TagmeService.relate(): Probably wrong Wikipedia title for 'titles' arg")
-            output = [r for r in results["result"] if float(r["rel"]) > min_rho]
-            return output
-        elif results["errors"] != 0 and "err" in results.keys() and results["err"] == "Unable to parse second title" or results["err"] == "Unable to parse first title":
-            print(BadRequest("Cannot find title in TagMe: " + str(results)))
-            return None
-        elif results["errors"] != 0 and "result" in results.keys() and results["result"][0]["err"] == "Unable to parse second title" or results["err"] == "Unable to parse first title":
-            print(BadRequest("Cannot find title in TagMe: " + str(results)))
-            return None
+        try:
+            if int(results["errors"]) == 0 or len(results["result"]) == 0:
+                output = [r for r in results["result"] if float(r["rel"]) > min_rho]
+                return output
+            else:
+                for r in results["result"]:
+                    if 'err' in r.keys():
+                        print(BadRequest("Error in request data to TagMe: " + str(r['err'] + " in " + str(r))))
+                        return None
+        except (Exception, KeyError) as e:
+            raise e
 
         raise BadRequest('TagMe API responded with an error: ' + str(results))
 

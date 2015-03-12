@@ -20,9 +20,7 @@ class TagMeOperation:
         self.connection = Wrapper()
         self.mongod = self.connection.return_mongo()
 
-    include = ['Aerospace', 'Astrophysics', 'Cosmic_ray', 'Spaceflight', 'Spacecraft', 'Avionics', "Command", "control",
-            "Geodesy", "Geographical", 'Astronomical', 'Astronomy', "flight", 'Aircraft', 'Atmosphere', "experiments", "Subfields"
-            "Navigation", "Satellite", "spaceflight", "Industry", "Communications", "Physics", "physical", "NASA", "ESA", "JAXA"]
+    include = TagMeService.return_gen_scopes()
 
 
     @classmethod
@@ -63,7 +61,7 @@ class TagMeOperation:
         return None
 
     @staticmethod
-    def check_if_rho_fits_spaceknowledge(output, level=0.39):
+    def check_if_rho_fits_spaceknowledge(output, level=0.42):
         """
         Takes as input the results of a TagMeService.relate() function and check if the mean of resulting rhos is
         above a level. Used to check if a term is semantically related to a list of fields
@@ -72,15 +70,21 @@ class TagMeOperation:
         :param level: the level at which to filter the mean of the rhos in the results
         :return: boolean
         """
-        count = len(output)
-        if count != 0:
-            total = 0.0
-            for o in output:
-                total += float(o["rel"])
-            mean = total / count
-            print(mean)
-            if level < mean < 0.59:
-                return True
+        if output is not None:
+            count = len(output)
+            zeros = 0
+            if count != 0:
+                total = 0.0
+                for o in output:
+                    if float(o["rel"]) == 0.0000:
+                        zeros += 1
+                    else:
+                        total += float(o["rel"])
+                mean = total / count
+                print(mean)
+                if level < mean < 0.61 and zeros < 8:
+                    return True
+            return False
         return False
 
     def link_annotated_keywords_and_subjects(self, c):
@@ -254,6 +258,10 @@ class TagMeOperation:
         # retrieve_taggings(body of the resource)
         # find annotations in the db
         # store link: annotation objects["chronos:relMission"] = mission object
+        import html.parser
+
+        print("semantic_links_for_missions()" + str(mssn))
+
         try:
             found = TagMeService.retrieve_taggings(txt)
         except BadRequest:
@@ -263,7 +271,10 @@ class TagMeOperation:
         if found["annotations"]:
             for f in found["annotations"]:
                 try:
+                    h = html.parser.HTMLParser()
                     slug = f["title"].replace(" ", "_")
+                    slug = h.unescape(slug)
+                    del h
                 except KeyError:
                     continue
                 if self.check_if_rho_fits_spaceknowledge(TagMeService.relate(titles=slug, min_rho=0.39)):
