@@ -225,5 +225,53 @@ Chronos_Targets = [
         "sim_related": "",
         "use_in_sim": False,
         "owl:sameAs": "http://dbpedia.org/resource/67P/Churyumov–Gerasimenko"
-    }
+    },
+    {
+        "id": 21,
+        "name": "Pluto",
+        "slug": "Pluto",
+        "body_type": ONTOLOGY + "DwarfPlanet",
+        "image_url": "",
+        "characteristics": "",
+        "curiosities": "",
+        "sim_related": "",
+        "use_in_sim": False,
+        "owl:sameAs": TAXONOMY + "Pluto"
+    },
+        {
+        "id": 21,
+        "name": "Vesta",
+        "slug": "4_Vesta",
+        "body_type": ONTOLOGY + "DwarfPlanet",
+        "image_url": "",
+        "characteristics": "",
+        "curiosities": "",
+        "sim_related": "",
+        "use_in_sim": False,
+        "owl:sameAs": TAXONOMY + "Vesta"
+    },
+        {
+        "id": 21,
+        "name": "Ceres",
+        "slug": "Ceres_(dwarf_planet)",
+        "body_type": ONTOLOGY + "DwarfPlanet",
+        "image_url": "",
+        "characteristics": "",
+        "curiosities": "",
+        "sim_related": "",
+        "use_in_sim": False,
+        "owl:sameAs": TAXONOMY + "Ceres"
+    },
+        {
+        "id": 21,
+        "name": "Charon",
+        "slug": "Charon_(moon)",
+        "body_type": ONTOLOGY + "MoonOfAPlanet",
+        "image_url": "",
+        "characteristics": "",
+        "curiosities": "",
+        "sim_related": "",
+        "use_in_sim": False,
+        "owl:sameAs": TAXONOMY + "Charon"
+    },
 ]
