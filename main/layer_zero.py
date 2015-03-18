@@ -7,12 +7,12 @@ def deploy_layer_zero():
     building = Build()
 
     # Store taxonomy concepts
-    building.add_all_concepts()
+    building.add_SKOS_concepts()
 
     # Store hierarchy in the taxonomy
-    building.add_all_linked()
+    building.add_hierarchical_links_among_concepts()
 
     # Store dbpedia docs linked to concepts
-    building.tag_keywords_and_subjects()
+    building.semantic_linking_for_concepts()
 
     return None

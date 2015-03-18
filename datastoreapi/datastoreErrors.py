@@ -20,3 +20,7 @@ class ValueExistsInList(Exception):
     Custom exception: the script is trying to append to list of values an object that is already in the list
     """
     pass
+
+
+class ErrorInQuery(Exception):
+    pass

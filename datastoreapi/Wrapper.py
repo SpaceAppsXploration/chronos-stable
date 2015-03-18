@@ -8,7 +8,7 @@ __author__ = ['lorenzo@pramantha.net']
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-from datastoreapi.datastoreErrors import DocumentExists
+from datastoreapi.datastoreErrors import DocumentExists, ErrorInQuery
 
 
 class Wrapper(object):
@@ -48,49 +48,51 @@ class Wrapper(object):
     def create_databases(self):
         pass
 
-    def append_link_to_mongodoc(self, document, field, resource, in_collection):
-        """
-        Utility method for all the different objects involved in the building.
-        Append @id, _id, @type of a certain resource to a document[field] into a collection.
-        If exist, it stores also skos:inScheme, altLabel and topConceptOf.
-        Needed when some stored document[field] needs to be updated.
-        """
-        to_append = dict(
-            {
-                "@id": resource["@id"],
-                "_id": resource["_id"],
-                "@type": resource["@type"],
-            }
-        )
+    def get_all_concepts(self, timeout):
+        try:
+            keywords = self.__mongod.base.find(
+                {
+                    "$or": [
+                        {"chronos:group": "keywords"},
+                        {"chronos:group": "subjects"},
+                        {"chronos:group": "divisions"}
+                    ]
+                },
+                timeout=timeout
+            )
+        except ErrorInQuery as e:
+            raise e
 
-        if "skos:inScheme" in resource:
-            to_append["skos:inScheme"] = resource["skos:inScheme"]
-        if "skos:topConceptOf" in resource:
-            to_append["skos:topConceptOf"] = resource["skos:topConceptOf"]
-        if "skos:altLabel" in resource.keys() and in_collection == 'freebaseRes':
-            to_append["skos:altLabel"] = resource["skos:altLabel"]
+        return keywords
 
-        coll = self.__mongod[in_collection]
+    def get_events_and_targets(self, timeout):
+        try:
+            docs = self.__mongod.base.find(
+                {"$or": [
+                    {"chronos:group": "targets"},
+                    {"chronos:group": "events"}
+                ]},
+                timeout=timeout)
+        except ErrorInQuery as e:
+            raise e
 
-        if document is not None:
-            try:
-                if type(document[field]) is list:
-                    if len(document[field]) == 0:
-                        document[field] = [to_append]
-                    elif [True for d in document[field] if d["_id"] == to_append["_id"]]:
-                        raise DocumentExists('This document is already in the property\'s value')
-                    else:
-                        document[field].append(to_append)
-                else:
-                    document[field] = to_append
-            except KeyError:
-                document[field] = [to_append]
+        return docs
 
-        else:
-            raise BaseException('Document trying to modify doesn\'t exist')
+    def get_all_missions(self, timeout):
+        try:
+            missions = self.__mongod.base.find({"chronos:group": "missions"}, timeout=timeout)
+        except ErrorInQuery as e:
+            raise e
 
-        return coll.find_and_modify({"_id": document["_id"]}, document, new=True)
+        return missions
 
+    def get_all_dbpediadocs(self, timeout):
+        try:
+            dbpedias = self.__mongod.base.find({"chronos:group": "dbpediadocs"}, timeout=timeout)
+        except ErrorInQuery as e:
+            raise e
+
+        return dbpedias
 
 # resource repositories links
 DBPEDIA_URL = "http://dbpedia.org/data/%s.jsond"             # string-substitute with wikipage title (slug)
@@ -114,28 +116,3 @@ SKOS_SCHEME = "http://www.w3.org/2004/02/skos/core#ConceptScheme"
 from input.STI import STI_divisions, STI_subjects  # file where taxonomy subjects and divisions are stored
 static = STI_divisions.copy()
 static.update(STI_subjects)
-
-CHRONOS_CONTEXT = dict(
-    {
-        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-        "skos": "http://www.w3.org/2004/02/skos/core#",
-        "schema": "http://schema.org/",
-        "dbpedia": "http://dbpedia.org/property/",
-        "owl": "http://www.w3.org/2002/07/owl#",
-        "chronos": "http://pramantha.eu/chronos/ontology/",
-        "@base": "http://pramantha.eu/chronos/ontology"
-    }
-)
-
-SENSORS_ONTOLOGY_CONTEXT = dict(
-    {
-        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-        "skos": "http://www.w3.org/2004/02/skos/core#",
-        "schema": "http://schema.org/",
-        "dbpedia": "http://dbpedia.org/property/",
-        "owl": "http://www.w3.org/2002/07/owl#",
-        "chronos": "http://pramantha.eu/ontology",
-        "sensor": "http://pramantha.eu/sensors/ontology/",
-        "@base": "http://pramantha.eu/sensors/ontology"
-    }
-)

@@ -13,9 +13,10 @@ from objectsapi.basicDocs import BasicDoc
 
 
 class STIsubject():
-    def __init__(self, obj):
+    def __init__(self, build, obj):
         self.connection = Wrapper()
         self.db = self.connection.return_mongo()
+        self.build = build  # instance of Build
         # html object to convert
         self.obj = obj
         self.code = str(obj.find("nt2:code").string)
@@ -34,9 +35,9 @@ class STIsubject():
             "@id": RESOURCE_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
-        self.concept_utilities = SKOSconcepts()  # instance of the concept to store into a document
+        self.concept_utilities = SKOSconcepts(self.build)  # instance of the concept to store into a document
 
-    def store_top_concept(self):
+    def store_top_concept(self, build):
         """
         store Subjects as a TopConcept to wrap all the keywords related to the subject itself
         1 @id = http://domain/subjects/label
@@ -67,18 +68,18 @@ class STIsubject():
             this_doc = self.db.base.find_one({"_id": id_})
             # append schema:provider
             try:
-                self.connection.append_link_to_mongodoc(this_doc, "schema:provider", self.provider, "base")
+                build.append_link_to_mongodoc(this_doc, "schema:provider", self.provider, "base")
             except DocumentExists:
                 pass
             # add hasTopConcept to the scheme
             try:
-                self.connection.append_link_to_mongodoc(new_scheme, "skos:hasTopConcept", this_doc, "base")
+                build.append_link_to_mongodoc(new_scheme, "skos:hasTopConcept", this_doc, "base")
             except DocumentExists:
                 pass
             # add document to subject's collection memberList
             new_collection = self.concept_utilities.find_or_create_collection("_:allSubj", self.subj_collection)
             try:
-                self.connection.append_link_to_mongodoc(new_collection, "skos:memberList", this_doc, "base")
+                build.append_link_to_mongodoc(new_collection, "skos:memberList", this_doc, "base")
             except DocumentExists:
                 pass
 
@@ -86,7 +87,7 @@ class STIsubject():
 
         return check
 
-    def add_keyword(self, keyword, subject_top_doc):
+    def add_keyword(self, build, keyword, subject_top_doc):
         # blank keyword
         kw_doc = BasicDoc.blank_keyword()
         kw_doc["skos:altLabel"] = keyword.replace(' ', '+').replace(',', '')
@@ -102,8 +103,8 @@ class STIsubject():
             id_ = self.db.base.insert(kw_doc)
             this_doc = self.db.base.find_one({"_id": id_})
             this_scheme = self.db.base.find_one({"@id": "_:subj" + self.code})
-            self.connection.append_link_to_mongodoc(this_doc, "skos:inScheme", this_scheme, "base")
-            self.connection.append_link_to_mongodoc(this_doc, "skos:exactMatch", subject_top_doc, "base")
+            build.append_link_to_mongodoc(this_doc, "skos:inScheme", this_scheme, "base")
+            build.append_link_to_mongodoc(this_doc, "skos:exactMatch", subject_top_doc, "base")
 
         return None
 

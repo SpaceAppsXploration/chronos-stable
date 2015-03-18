@@ -18,11 +18,10 @@ class CHRONOSmission:
     :method store_launch: store from DBpedia file, has typical fields to handle
     :method store_hasKeyword_to_missions: loops through stored missions looking for possible links
     """
-    def __init__(self, obj):
-        self.connection = Wrapper()
-        self.db = self.connection.return_mongo()
+    def __init__(self, build, obj):
+        self.build = build  # instance of Build
         self.mission_obj = obj
-        self.concept_utilities = SKOSconcepts()  # instance of the concept utilities
+        self.concept_utilities = SKOSconcepts(build=self.build)  # instance of the concept utilities
 
     def store_mission(self):
         # add missions from file
@@ -73,17 +72,17 @@ class CHRONOSmission:
             print("CANNOT FIND SPARQL FOR CACHING!")
             pass
 
-        if self.db.base.find_one({"@id": doc["@id"]}) is None:
+        if self.build.mongod.base.find_one({"@id": doc["@id"]}) is None:
             pprint("STORE MISSION: " + str(self.mission_obj["name"]))
             # print(doc)
-            id_ = self.db.base.insert(doc)
-            this_doc = self.db.base.find_one({"_id": id_})
+            id_ = self.build.mongod.base.insert(doc)
+            this_doc = self.build.mongod.base.find_one({"_id": id_})
 
             for t in self.mission_obj['target']:
-                target = self.db.base.find_one({"skos:prefLabel": t})
+                target = self.build.mongod.base.find_one({"skos:prefLabel": t})
                 if target is not None:
                     try:
-                        self.connection.append_link_to_mongodoc(this_doc, "chronos:relTarget", target, "base")
+                        self.build.append_link_to_mongodoc(this_doc, "chronos:relTarget", target, "base")
                     except DocumentExists:
                         pass
                     pprint("STORE TARGET in mission")
@@ -121,21 +120,21 @@ class CHRONOSmission:
                 break
 
         # if mission exist, dont store the launch, but add to the mission
-        check = self.db.base.find_one({"owl:sameAs": {"$elemMatch": {"@value": url}}})
+        check = self.build.mongod.base.find_one({"owl:sameAs": {"$elemMatch": {"@value": url}}})
         if check is not None:
             if len(instrumentation) != 0:
                 up = check
                 if not up["chronos:payload"] and not up["rdf:type"]:
                     up["chronos:payload"] = instrumentation
                     up["rdf:type"] = types
-                    self.db.base.update({"_id": check["_id"]}, up)
+                    self.build.mongod.base.update({"_id": check["_id"]}, up)
                     pprint("INSTRUMENTS ADDING TO EXISTING MISSION >>>>:" + str(instrumentation))
                     pprint("MISSION UPDATED >>>>: " + str(check["@id"]))
                 else:
                     pprint("INSTRUMENTS ALREADY ADDED TO MISSION >>>>:" + str(check["@id"]))
                 return None
 
-        if not self.db.base.find_one({"@id": RESOURCE_URL % ("missions", slug)}):
+        if not self.build.mongod.base.find_one({"@id": RESOURCE_URL % ("missions", slug)}):
             # create the basic document about the launch
             new = BasicDoc()
             doc = new.blank_launch()
@@ -157,7 +156,7 @@ class CHRONOSmission:
             # add launch types
             for t in types:
                 doc["rdf:type"].append(t["value"])
-            id_ = self.db.base.insert(doc)
+            id_ = self.build.mongod.base.insert(doc)
 
         return None
 

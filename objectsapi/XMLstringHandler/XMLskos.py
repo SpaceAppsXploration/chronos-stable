@@ -18,11 +18,10 @@ class XMLskos():
     :method store_STI_document: select and format a BS4 XML tag <skos:Concept> and properly store it
     """
 
-    def __init__(self, xml_string):
-        self.connection = Wrapper()
-        self.mongod = self.connection.return_mongo()
+    def __init__(self, build, xml_string):
+        self.build = build  # instance of Build running the script
         self.xml_string = xml_string
-        self.provider = self.mongod.base.find_one({
+        self.provider = build.mongod.base.find_one({
             "@id": RESOURCE_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
@@ -76,27 +75,27 @@ class XMLskos():
                 ],
                 "schema:url": {"@type": "http://schema.org/URL", "@value": "http://www.sti.nasa.gov/"}
             }
-            check = self.mongod.base.find_one({"@id": doc["@id"]})
+            check = self.build.mongod.base.find_one({"@id": doc["@id"]})
             if not check:
-                return self.mongod.base.insert(doc)
+                return self.build.mongod.base.insert(doc)
             return check
         elif int_code > 100:
             # concept is a Division
-            new = STIdivision(obj=concept)
+            new = STIdivision(build=self.build, obj=concept)
             try:
                 new.store_division_concept()
             except datastoreErrors.DocumentExists:
                 return
         elif int_code < 100:
             # concept is a Subject
-            new = STIsubject(obj=concept)
-            top_concept = new.store_top_concept()
+            new = STIsubject(build=self.build, obj=concept)
+            top_concept = new.store_top_concept(build=self.build)
             for kw in concept.find_all('skos:altlabel'):
                 #print(kw)
-                new.add_keyword(kw.string, top_concept)
+                new.add_keyword(build=self.build, keyword=kw.string, subject_top_doc=top_concept)
             return None
 
-    def link_sti_document(self, obj):
+    def link_sti_document(self, build, obj):
         """
         Links all the keywords in a Divisions>Subjects>Keywords hierarchy
         :param obj:
@@ -104,16 +103,21 @@ class XMLskos():
         """
         from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 
-        concept_utilities = SKOSconcepts()
+        concept_utilities = SKOSconcepts(build=self.build)
         pref_label = obj.find("skos:preflabel").string
 
-        doc = self.mongod.base.find_one({"skos:prefLabel": pref_label})
+        print("<<<<<<<<<<<<<<< LINK STI DOCUMENT prefLabel: " + pref_label)
+
+        doc = self.build.mongod.base.find_one({"skos:prefLabel": pref_label})
 
         if doc is None:
             id_ = self.store_sti_document(obj, obj.find("nt2:code").string)
-            doc = self.mongod.base.find_one({"_id": id_})
+            doc = self.build.mongod.base.find_one({"_id": id_})
 
-        self.connection.append_link_to_mongodoc(doc, "schema:provider", self.provider, "base")
+        try:
+            build.append_link_to_mongodoc(doc, "schema:provider", self.provider, "base")
+        except BaseException:
+            pass
 
         if obj.find_all('skos:broader') is not None:
             for broad in obj.find_all('skos:broader'):
@@ -133,11 +137,11 @@ class XMLskos():
                 cc = self.find_concept(code)
                 concept_utilities.store_narrower(obj, cc)
 
-    def check_concept_complete(self):
+    def check_concept_complete(self, build):
         # check if all concept has a 'provider'
-        for obj in enumerate(self.mongod.base.find({"chronos:group": "keywords"})):
-            doc = self.mongod.base.find_one({"_id": obj[1]["_id"]})
-            self.connection.append_link_to_mongodoc(doc, "schema:provider", self.provider, "base")
+        for obj in enumerate(self.build.mongod.base.find({"chronos:group": "keywords"})):
+            doc = self.build.mongod.base.find_one({"_id": obj[1]["_id"]})
+            build.append_link_to_mongodoc(doc, "schema:provider", self.provider, "base")
 
 
 if __name__ == "__main__":

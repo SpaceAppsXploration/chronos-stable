@@ -22,3 +22,7 @@ class Test(unittest.TestCase):
     @classmethod
     def test_add_events(cls, test):
         cls.built.add_events(test=test)
+
+    @classmethod
+    def test_add_sensors(cls):
+        cls.built.add_sensors()

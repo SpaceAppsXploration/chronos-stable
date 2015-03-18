@@ -1,5 +1,5 @@
 #
-# Tests for the second stage of 'layer zero' of deploying: add_all_concepts
+# Tests for the first stage of 'layer one' of deploying: add_sensors
 #
 
 __author__ = ['lorenzo@pramantha.net']
@@ -20,5 +20,5 @@ class Test(unittest.TestCase):
     built = Build()
 
     @classmethod
-    def test_add_all_concepts(cls, test=True):
-        cls.built.add_SKOS_concepts(test=test)
+    def test_add_sensors(cls):
+        cls.built.add_sensors()

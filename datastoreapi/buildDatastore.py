@@ -8,7 +8,8 @@ sys.path.append(os.path.dirname(CURRENT_DIR))
 
 from pymongo.errors import CollectionInvalid
 from datastoreapi.Wrapper import *
-from toolbox import tools
+from datastoreapi import Operations
+
 
 class Build:
     """
@@ -35,12 +36,13 @@ class Build:
     """
 
     def __init__(self):
-        self.connection = Wrapper()
-        self.mongod = self.connection.return_mongo()
+        self.w = Wrapper()
+        self.mongod = self.w.return_mongo()
 
         # create collections in DB
         try:
             self.mongod.create_collection("base")
+            self.mongod.create_collection("sensors")
             self.mongod.create_collection("crawling", autoIndexId=False)
             self.mongod.create_collection("webpages")
             self.mongod.create_collection("DBpediacache", autoIndexId=False)
@@ -51,6 +53,7 @@ class Build:
         self.mongod.base.ensure_index("@id", unique=True)
         self.mongod.base.ensure_index("skos:prefLabel")
         self.mongod.base.ensure_index("chronos:group", sparse=True)
+        self.mongod.sensors.ensure_index("@id", unique=True)
         self.mongod.crawling.ensure_index("hashed", unique=True)
         self.mongod.crawling.ensure_index("key")
         self.mongod.crawling.ensure_index("keyword")
@@ -61,280 +64,163 @@ class Build:
         print("Build Constructor")
         # Finished initializing the basic building object
 
+    def append_link_to_mongodoc(self, document, field, resource, in_collection):
+        """
+        Utility method for all the different objects involved in the building.
+        Append @id, _id, @type of a certain resource to a document[field] into a collection.
+        If exist, it stores also skos:inScheme, altLabel and topConceptOf.
+        Needed when some stored document[field] needs to be updated.
+        """
+        to_append = dict(
+            {
+                "@id": resource["@id"],
+                "_id": resource["_id"],
+                "@type": resource["@type"],
+            }
+        )
 
-    # Step 1: add SKOS concepts
-    @staticmethod
-    def add_all_concepts(test=False):
-        """
-        Looks for concepts in bs4 XML-DOM, loops over all and stores them using XMLskos.store_sti_document
-        :return: None
-        """
-        # load XML-munching utilities
-        from objectsapi.XMLstringHandler.XMLskos import XMLskos
-        if not test:
-            from input.JPLSKOS.jpl_skos import jpl_skos_xml
+        if "skos:inScheme" in resource:
+            to_append["skos:inScheme"] = resource["skos:inScheme"]
+        if "skos:topConceptOf" in resource:
+            to_append["skos:topConceptOf"] = resource["skos:topConceptOf"]
+        if "skos:altLabel" in resource.keys() and in_collection == 'freebaseRes':
+            to_append["skos:altLabel"] = resource["skos:altLabel"]
+
+        coll = self.mongod[in_collection]
+
+        if document is not None:
+            try:
+                if type(document[field]) is list:
+                    if len(document[field]) == 0:
+                        document[field] = [to_append]
+                    elif [True for d in document[field] if d["_id"] == to_append["_id"]]:
+                        raise DocumentExists('This document is already in the property\'s value')
+                    else:
+                        document[field].append(to_append)
+                else:
+                    document[field] = to_append
+            except KeyError:
+                document[field] = [to_append]
+
         else:
-            from tests.test_inputs.mockData import NASAxml_test
-            jpl_skos_xml = NASAxml_test
+            print(document)
+            raise BaseException('Document trying to modify doesn\'t exist')
 
-        xml_processing = XMLskos(xml_string=jpl_skos_xml)
-        # add root object
-        xml_processing.add_root()
+        return coll.find_and_modify({"_id": document["_id"]}, document, new=True)
 
-        # loop all the skos:concept in the file
-        for obj in xml_processing.return_soup().find_all('skos:concept'):
-            obj_code = obj.find("nt2:code").string
-            print(obj_code)
-            xml_processing.store_sti_document(obj, obj_code)
-
-        del xml_processing
-        return None
-
-    # Step 3: add hierarchical links among concepts
-    @staticmethod
-    def add_all_linked():
+    #
+    # Layer Zero
+    #
+    # Step 1: add SKOS concepts
+    def add_SKOS_concepts(self, test=False):
         """
-        Stores in the database all the hierarchical information in the SKOS-XML string
+        Looks for concepts in the XML-DOM file, dumps the right document in Mongo
         :return: None
         """
-        # load XML-munching utilities
-        from objectsapi.XMLstringHandler.XMLskos import XMLskos
-        from input.JPLSKOS.jpl_skos import jpl_skos_xml
 
-        xml_processing = XMLskos(xml_string=jpl_skos_xml)
-
-        # add links
-        for obj in xml_processing.return_soup().find_all('skos:concept'):
-            xml_processing.link_sti_document(obj)
-
-        xml_processing.check_concept_complete()
-
-        del xml_processing
+        Operations.dump_concepts(build=self, test=test)
         return None
 
-    # Step 4: semantic linking for concepts
-    def tag_keywords_and_subjects(self):
+    # Step 2: add hierarchical links among concepts
+    def add_hierarchical_links_among_concepts(self, test=False):
+        """
+        Stores in the database all the hierarchical information in the XML-DOM file
+        :return: None
+        """
+
+        Operations.dump_hierarchy(build=self, test=test)
+        return None
+
+    # Step 3: semantic linking for concepts
+    def semantic_linking_for_concepts(self):
         """
         use the tagmeapi to store annotations about keywords and subjects
         :return: None
         """
-        from tagmeapi.tagMeOperation import TagMeOperation
-        new = TagMeOperation()
-        new.insert_sections()
-        keywords = self.mongod.base.find(
-            {
-                "$or": [
-                    {"chronos:group": "keywords"},
-                    {"chronos:group": "subjects"},
-                    {"chronos:group": "divisions"}
-                ]
-            },
-            timeout=False
-        )
 
-        # add dbpedia documents semantically linked to detector ontologies
-
-        for k in keywords:
-            print("KEYWORD >>> ", k["skos:prefLabel"])
-            try:
-                new.link_annotated_keywords_and_subjects(k)
-            except Exception as e:
-                print(Exception(">>>>>>>>> ERROR Tagging Keyword: " + str(e)))
-                continue
-
+        keywords = self.w.get_all_concepts(timeout=False)
+        Operations.semantic_hierarchy(build=self, keywords=keywords)
         keywords.close()
-        del new
+        return None
 
+    #
     # Layer One
-    @staticmethod
-    def add_targets():
+    #
+    def add_targets(self):
         """
         Stores in the database all the information about missions' targets, taken from a JSON file
         and also stores annotations about the given target
         :return: None
         """
-        from tagmeapi.tagMeOperation import TagMeOperation
-        from objectsapi.ChronosObjects.chronosTarget import CHRONOStarget
-        from input.Targets.targets import Chronos_Targets
 
-        ops = TagMeOperation()
-        for t in Chronos_Targets:
-            new = CHRONOStarget(t)
-            # store target
-            new.store_target()
-            del new
-
-        del ops
-
+        Operations.get_and_store_targets_from_chronos_dump(build=self)
         return None
 
-    @staticmethod
-    def add_missions(test=False):
+    def add_missions(self, test=False):
         """
         Stores in the database all the information about missions, taken from a JSONs: a single file about missions
         and many others about launches
         :return: None
         """
-        from objectsapi.ChronosObjects.chronosMission import CHRONOSmission
-        from input.Missions.missions import Chronos_Missions
-        from input.Launches.GetLaunches import get_launches_from_file
 
-        # aggregate missions by codename
-        missions_to_store = {}
-
-        for m in Chronos_Missions:
-            if m["codename"] not in missions_to_store.keys():
-                missions_to_store[m["codename"]] = m
-                target = missions_to_store[m["codename"]]["target"]
-                missions_to_store[m["codename"]]["target"] = list()
-                missions_to_store[m["codename"]]["target"].append(target)
-            else:
-                missions_to_store[m["codename"]]["target"].append(m["target"])
-                if "slug" in m:
-                    missions_to_store[m["codename"]]["slug"] = m["slug"]
-        missions_to_store = list(missions_to_store.values())
-
-        # from pprint import pprint
-        # pprint(missions_to_store)
-
-        # first part added from mission.py file
-        for i, m in enumerate(missions_to_store):
-            new = CHRONOSmission(m)
-            new.store_mission()
-            if test and i > 25:
-                break
-
-        # second part added from Launches directory
-        history = get_launches_from_file()
-        for i, year in enumerate(history.keys()):
-            for m in history[year]:
-                new = CHRONOSmission(m)
-                new.store_launch(year)
-            if test and i == 2:
-                # if test is True store only two years of launches
-                break
-
+        Operations.get_and_store_missions_from_chronos_dump(build=self, test=test)
         return None
 
-    @staticmethod
-    def add_events(test=False):
-        from toolbox import tools
-        from datastoreapi.datastoreErrors import DocumentExistNot
-        from input.Details.missions_ids import missions_ids
-        from objectsapi.ChronosObjects.chronosEvent import CHRONOSEvent
+    def add_events(self, test=False):
+        """
+        Stores in the database all the information about missions, taken from a JSONs: a single file about missions
+        and many others about launches
+        :return: None
+        """
 
-        for i, m in enumerate(missions_ids):
-            # retrieve events referred to a mission from old APIs
-            js = tools.retrieve_json("http://www.spacexplore.it:80/api/missions/details/" + str(m))
-            try:
-                new = CHRONOSEvent(m, js)
-                new.store_event()
-            except DocumentExistNot:
-                if test:
-                    continue
-                else:
-                    print(DocumentExistNot("EVENTS API: This mission is not in the DB"))
-            # if test, dont raise the error adn stop after some events are stored
-            if test and i > 20:
-                break
+        Operations.get_and_store_events_from_chronos_dump(build=self, test=test)
+        return None
 
+    def add_sensors(self):
+        """
+        Stores in the database all the information about the starting set of sensors, taken from a JSONs
+        :return: None
+        """
+
+        Operations.get_and_store_sensors(build=self)
         return None
 
     def link_targets_and_events(self, test=False):
         """
-        Establishes "chronos:relatedDoc" predicate to Targets and Missions documents
+        use the tagmeapi to store annotations about targets and events stored above
         :return: None
         """
-        from tagmeapi.tagMeOperation import TagMeOperation
 
-        ops = TagMeOperation()
-        docs = self.mongod.base.find(
-            {"$or": [
-                {"chronos:group": "targets"},
-                {"chronos:group": "events"}
-            ]},
-            timeout=False)
-
-        for i, d in enumerate(docs):
-            ops.store_annotations_for_targets_and_events(doc=d)
-            if test and i > 15:
-                break
-
-        del ops
+        docs = self.w.get_events_and_targets(timeout=False)
+        Operations.annotate_targets_and_events(build=self, test=test, docs=docs)
         docs.close()
         return None
 
-    def semantic_links_for_missions(self, test=False):
-        from toolbox import surfing
-        from datastoreapi.datastoreErrors import DocumentExists, DocumentExistNot
-        from tagmeapi.tagMeOperation import TagMeOperation
+    def link_missions(self, test=False):
+        """
+        use the tagmeapi to store annotations about missions stored above
+        :return: None
+        """
 
-        missions = self.mongod.base.find({"chronos:group": "missions"}, timeout=False)
-
-        for i, m in enumerate(missions):
-            # get resource
-            # get body of the resource
-            to_crawl = m["owl:sameAs"][0]["@value"]
-            try:
-                new = surfing.JsonLD()
-                text = new.get_body_text_from_dbpedia_jsonld(to_crawl)
-                del new
-            except DocumentExistNot:
-                continue
-
-            new = TagMeOperation()
-            new.tag_and_link_resources_to_mission(m, text)
-            del new
-            if test and i > 15:
-                break
-
+        missions = self.w.get_all_missions(timeout=False)
+        Operations.annotate_missions(build=self, test=test, missions=missions)
         missions.close()
         return None
 
     def relate_stored_dbpedias(self, test=False):
         """
-        loops through all dbpedia stored and check if there are high-rhos relating.
-        if yes link resources with "chronos:relatedMatch"
+        use the tagmeapi "rel" service to link dbpediadocs with high rho by "chronos:relatedMatch" predicate
         :return:
         """
-        from toolbox import surfing
-        from datastoreapi.datastoreErrors import DocumentExists
-        from tagmeapi.tagMeService import TagMeService
 
-        dbpedias = self.mongod.base.find({"chronos:group": "dbpediadocs"}, timeout=False)
-
-        for i, d in enumerate(dbpedias):
-            # relate with the rest of dbpedias
-            # filter by rhos
-            # link each other chronos:relatedMatch
-            name = tools.from_dbpedia_url_return_slug(d["owl:sameAs"][0]["@value"])
-            print(d["skos:altLabel"], name)
-            for t, d2 in enumerate(dbpedias):
-                ops = surfing.JsonLD()
-                comparing = tools.from_dbpedia_url_return_slug(d2["owl:sameAs"][0]["@value"])
-                del ops
-                if name != "Space" and comparing != "Space" and name != comparing:
-                    print("Relating...")
-                    output = TagMeService.relate(name, comparing, min_rho=0.67)
-                    if output and len(output) != 0:
-                        print(">>>>>>>>>>>>>>>> Linking " + name + " with " + comparing)
-                        try:
-                            self.connection.append_link_to_mongodoc(d, "chronos:relatedMatch", d2, "base")
-                        except DocumentExists:
-                            pass
-                        try:
-                            self.connection.append_link_to_mongodoc(d2, "chronos:relatedMatch", d, "base")
-                        except DocumentExists:
-                            pass
-                if test and t > 5:
-                    break
-            if test and i > 10:
-                break
-
+        dbpedias = self.w.get_all_dbpediadocs(timeout=False)
+        Operations.link_correlated_dbpediadocs(build=self, test=test, dbpedias=dbpedias)
         dbpedias.close()
         return None
 
+    #
     # Layer Two
+    #
     @staticmethod
     def crawl_agencies(test=False):
         """
@@ -402,7 +288,7 @@ class Build:
                     slug = a['title'].replace(' ', '_')
                     dbpedia = DBPEDIA_URL % slug
                     chronos_id = RESOURCE_URL % ("dbpediadocs", slug)
-                    new = PublicRepoDocument(dbpedia=dbpedia)
+                    new = PublicRepoDocument(build=self, dbpedia=dbpedia)
                     try:
                         new_doc = new.store_wiki_resource()
                         if not new_doc:
@@ -418,7 +304,7 @@ class Build:
                         for n in new_doc["chronos:relKeyword"]:
                             # if wiki doc is linked to a keyword: store link URL_doc["schema:about"]: keyword
                             try:
-                                self.connection.append_link_to_mongodoc(url_doc, "schema:about", n, "webpages")
+                                self.append_link_to_mongodoc(url_doc, "schema:about", n, "webpages")
                                 print("Annotations store in url document")
                             except DocumentExists:
                                 pass
@@ -427,7 +313,7 @@ class Build:
                     if t:
                         # if annotation is a Target, add chronos:relTarget
                         try:
-                            self.connection.append_link_to_mongodoc(url_doc, "chronos:relTarget", t, "webpages")
+                            self.append_link_to_mongodoc(url_doc, "chronos:relTarget", t, "webpages")
                             print("Annotation of Target added")
                         except DocumentExists:
                             pass
@@ -435,7 +321,7 @@ class Build:
                     m = self.mongod.base.find_one({"chronos:slug": slug, "chronos:group": "missions"})
                     if m:
                         try:
-                            self.connection.append_link_to_mongodoc(url_doc, "chronos:relMission", m, "webpages")
+                            self.append_link_to_mongodoc(url_doc, "chronos:relMission", m, "webpages")
                             print("Annotation of Mission added")
                         except DocumentExists:
                             continue
@@ -451,7 +337,7 @@ class Build:
                     "@id": RESOURCE_URL % ("keywords", res["keyword"])})
                 if kwd is not None:
                     try:
-                        self.connection.append_link_to_mongodoc(check, "schema:about", kwd, "webpages")
+                        self.append_link_to_mongodoc(check, "schema:about", kwd, "webpages")
                         print("FIRST TRY: STORING Keyword Related in URLS and KWD: " + check["@id"])
                     except DocumentExists:
                         pass
@@ -477,7 +363,7 @@ class Build:
                 kwd = self.mongod.base.find_one({"chronos:group": "keywords", "skos:prefLabel": res["key"]})
                 if kwd is not None:
                     try:
-                        self.connection.append_link_to_mongodoc(url_doc, "schema:about", kwd, "webpages")
+                        self.append_link_to_mongodoc(url_doc, "schema:about", kwd, "webpages")
                         print("FIRST TRY: STORING Keyword Related in URLS and KWD: " + url_doc["@id"])
                     except DocumentExists:
                         pass
@@ -488,7 +374,7 @@ class Build:
                     # update the "chronos:relMission" property
                     if qm is not None:
                         try:
-                            self.connection.append_link_to_mongodoc(url_doc, "chronos:relMission", qm, "webpages")
+                            self.append_link_to_mongodoc(url_doc, "chronos:relMission", qm, "webpages")
                         except DocumentExists:
                             pass
                 # set a string representing abstract and title of webpage

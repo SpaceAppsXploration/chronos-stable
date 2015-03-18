@@ -28,12 +28,12 @@ class TestKBcreation(unittest.TestCase):
 
         from tests.tests_layer_zero.test_add_concepts import Test
         t = Test()
-        t.test_add_all_concepts(test=True)
+        #t.test_add_all_concepts(test=False)
         del t
 
         from tests.tests_layer_zero.tests_tag_keywords import Test
         t = Test()
-        t.test_tag_keywords_and_subjects()
+        #t.test_tag_keywords_and_subjects(test=False)
         del t
 
         #
@@ -41,12 +41,12 @@ class TestKBcreation(unittest.TestCase):
         #
         from tests.tests_layer_one.tests_add_targets import Test
         t = Test()
-        t.test_add_targets()
+        #t.test_add_targets()
         del t
 
         from tests.tests_layer_one.tests_add_missions import Test
         t = Test()
-        t.test_add_missions(test=True)
+        #t.test_add_missions(test=True)
         del t
 
         from tests.tests_layer_one.tests_add_events import Test
@@ -56,13 +56,19 @@ class TestKBcreation(unittest.TestCase):
 
         from tests.tests_layer_one.tests_semantic_linking import Test
         t = Test()
-        t.test_link_targets_and_events(test=True)
+        #t.test_link_targets_and_events(test=True)
+        del t
+
+        from tests.tests_layer_one.tests_semantic_linking import Test
+        t = Test()
+        #t.test_semantic_links_for_missions(test=True)
         del t
 
         from tests.tests_layer_one.tests_semantic_linking import Test
         t = Test()
         t.test_semantic_links_for_missions(test=True)
         del t
+
 
         #
         # Test Layer Two

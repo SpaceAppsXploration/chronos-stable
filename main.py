@@ -11,7 +11,7 @@ def algorithm():
 
     deploy_layer_one()
 
-    deploy_layer_two()
+    #deploy_layer_two()
 
 
 if __name__ == "__main__":

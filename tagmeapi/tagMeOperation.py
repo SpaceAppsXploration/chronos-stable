@@ -16,10 +16,10 @@ class TagMeOperation:
     Contains methods that use TagMeService to operate on the database
     -----------------------------------------------------------------
     """
-    def __init__(self):
-        self.connection = Wrapper()
-        self.mongod = self.connection.return_mongo()
+    def __init__(self, build):
+        self.build = build  # instance of Build
 
+    # return general arguments from the TagMeService class
     include = TagMeService.return_gen_scopes()
 
 
@@ -47,7 +47,7 @@ class TagMeOperation:
         for i, t in enumerate(rlts):
             print(t)
             # insert resourcs in Mongo with "chronos:section": true
-            inc = PublicRepoDocument(dbpedia=t)
+            inc = PublicRepoDocument(build=self.build, dbpedia=t)
             try:
                 doc = inc.store_wiki_resource()
             except DocumentExists as e:
@@ -56,7 +56,7 @@ class TagMeOperation:
                 return
 
             doc["chronos:section"] = True
-            self.mongod.base.find_and_modify({"_id": doc["_id"]}, doc)
+            self.build.mongod.base.find_and_modify({"_id": doc["_id"]}, doc)
 
         return None
 
@@ -151,19 +151,19 @@ class TagMeOperation:
             return
 
         # create the dbpediadocs to be stored
-        to_store = PublicRepoDocument(dbpedia=dbpedia)
+        to_store = PublicRepoDocument(build=self.build, dbpedia=dbpedia)
 
         try:
             doc = to_store.store_wiki_resource()
             print("DOC STORED")
         except DocumentExists as e:
-            doc = self.mongod.base.find_one({"@id": RESOURCE_URL % ("dbpediadocs", slug)})
+            doc = self.build.mongod.base.find_one({"@id": RESOURCE_URL % ("dbpediadocs", slug)})
             print("DOC FETCHED: " + dbpedia)
 
         pprint(doc)  #complete doc
 
         # link dbpedia doc with narrowMatch to keyword
-        kw = self.mongod.base.find_one({"skos:prefLabel": keyword,
+        kw = self.build.mongod.base.find_one({"skos:prefLabel": keyword,
                                     "$or": [
                                         {"chronos:group": "keywords"},
                                         {"chronos:group": "subjects"}
@@ -172,7 +172,7 @@ class TagMeOperation:
         if kw is not None:
             pprint(kw["@id"])
             try:
-                id_ = self.connection.append_link_to_mongodoc(doc, "chronos:relKeyword", kw, "base")["_id"]
+                id_ = self.build.append_link_to_mongodoc(doc, "chronos:relKeyword", kw, "base")["_id"]
             except DocumentExists:
                 id_ = doc["_id"]
         else:
@@ -181,7 +181,7 @@ class TagMeOperation:
 
         # return the dbpediadoc that has been created or modified
         print("MEAN OK: Store Annotation: " + str(doc["@id"]))
-        return self.mongod.base.find_one({"_id": ObjectId(id_)})
+        return self.build.mongod.base.find_one({"_id": ObjectId(id_)})
 
     def store_annotations_for_targets_and_events(self, doc):
         """
@@ -222,9 +222,9 @@ class TagMeOperation:
                         if TagMeOperation.check_if_rho_fits_spaceknowledge(
                                 TagMeService.relate(titles=title, min_rho=0.39)
                         ):
-                            check = self.mongod.base.find_one({"chronos:group": "dbpediadocs", "skos:altLabel": title})
+                            check = self.build.mongod.base.find_one({"chronos:group": "dbpediadocs", "skos:altLabel": title})
                             if not check:
-                                to_store = PublicRepoDocument(dbpedia=DBPEDIA_URL % title)
+                                to_store = PublicRepoDocument(build=self.build, dbpedia=DBPEDIA_URL % title)
                                 try:
                                     check = to_store.store_wiki_resource()
                                 except DocumentExists:
@@ -232,11 +232,11 @@ class TagMeOperation:
 
                             if event:
                                 try:
-                                    self.connection.append_link_to_mongodoc(check, "chronos:relEvent", doc, "base")
+                                    self.build.append_link_to_mongodoc(check, "chronos:relEvent", doc, "base")
                                 except DocumentExists:
                                     continue
 
-                            to_link = self.mongod.base.find({"chronos:slug": title})
+                            to_link = self.build.mongod.base.find({"chronos:slug": title})
                             if to_link is not None:
                                 for l in to_link:
                                     # if a type target or mission with the same title exists
@@ -247,7 +247,7 @@ class TagMeOperation:
                                     else:
                                         continue
                                     try:
-                                        self.connection.append_link_to_mongodoc(check, prop, l, "base")
+                                        self.build.append_link_to_mongodoc(check, prop, l, "base")
                                     except DocumentExists:
                                         continue
                                 continue
@@ -283,21 +283,21 @@ class TagMeOperation:
                         print(alt_label)
                     except KeyError:
                         continue
-                    doc = self.mongod.base.find_one({"skos:altLabel": alt_label})
+                    doc = self.build.mongod.base.find_one({"skos:altLabel": alt_label})
                     if not doc:
                         # store resource and link resource[chronos:mission] = mission document
                         new_url = DBPEDIA_URL % alt_label
-                        new = PublicRepoDocument(dbpedia=new_url)
+                        new = PublicRepoDocument(build=self.build, dbpedia=new_url)
                         new_doc = new.store_wiki_resource()
                         del new
                         if not new_doc:
                             continue
-                        self.connection.append_link_to_mongodoc(new_doc, "chronos:relMission", mssn, "base")
+                        self.build.append_link_to_mongodoc(new_doc, "chronos:relMission", mssn, "base")
 
                     else:
                         # link resource[chronos:mission] = mission document
                         try:
-                            self.connection.append_link_to_mongodoc(doc, "chronos:relMission", mssn, "base")
+                            self.build.append_link_to_mongodoc(doc, "chronos:relMission", mssn, "base")
                         except DocumentExists:
                             pass
 

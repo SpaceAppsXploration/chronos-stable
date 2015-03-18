@@ -1,8 +1,8 @@
 from pprint import pprint
 from pymongo.errors import DuplicateKeyError, DocumentTooLarge
 
+
 from datastoreapi.Wrapper import *
-from datastoreapi.buildDatastore import Build
 from datastoreapi.datastoreErrors import DocumentExists
 from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 from objectsapi.basicDocs import BasicDoc
@@ -12,15 +12,13 @@ from toolbox.pediacache import DBpediaCache
 
 
 class PublicRepoDocument():
-    def __init__(self, dbpedia=None, freebase=None, abstract=None):
-        self.connection = Wrapper()
-        self.db = self.connection.return_mongo()
+    def __init__(self, build, dbpedia=None, freebase=None, abstract=None):
+        self.build = build  # instance of Build
         self.dbpedia = dbpedia  # url of dbpedia jsond or xml
         self.freebase = freebase  # url of freebase doc
         self.abstract = abstract  # optional abstract
 
-        self.concept_utilities = SKOSconcepts()  # instance of the concept utilities
-
+        self.concept_utilities = SKOSconcepts(build=self.build)  # instance of the concept utilities
 
     def store_wiki_resource(self):
         """
@@ -52,7 +50,7 @@ class PublicRepoDocument():
             sparql = DBPEDIA_RESOURCE % label
 
             url = RESOURCE_URL % ("dbpediadocs", label)
-            check = self.db.base.find_one({"@id": url})
+            check = self.build.mongod.base.find_one({"@id": url})
             if check is None:
                 pprint("Storing Resource:" + url)
 
@@ -83,8 +81,8 @@ class PublicRepoDocument():
                     pass
 
                 # insert doc
-                id_ = self.db.base.insert(doc)
-                this_doc = self.db.base.find_one({"_id": id_})
+                id_ = self.build.mongod.base.insert(doc)
+                this_doc = self.build.mongod.base.find_one({"_id": id_})
                 print("DBPEDIA DOC INSERTED <<<<<<<<<<<<<<<")
 
                 # insert cache

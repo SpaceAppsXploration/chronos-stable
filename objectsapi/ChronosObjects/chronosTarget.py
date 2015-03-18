@@ -10,9 +10,8 @@ from objectsapi.XMLstringHandler.XMLtaxonomyUtilities import SKOSconcepts
 
 
 class CHRONOStarget:
-    def __init__(self, obj):
-        self.connection = Wrapper()
-        self.db = self.connection.return_mongo()
+    def __init__(self, build, obj):
+        self.build = build  # instance of Build running the building process
         self.obj = obj
         # create a blank node to handle the collection of divisions
         self.coll = {
@@ -30,7 +29,7 @@ class CHRONOStarget:
             }, "skos:memberList": []
         }
 
-        self.concept_utilities = SKOSconcepts()  # instance of the concept utilities
+        self.concept_utilities = SKOSconcepts(build=self.build)  # instance of the concept utilities
 
     def store_target(self):
         """
@@ -68,17 +67,17 @@ class CHRONOStarget:
         doc["chronos:simRelated"]["@value"] = self.obj["sim_related"]
         doc["chronos:useInSim"]["@value"] = self.obj["use_in_sim"]
 
-        check = self.db.base.find_one({"@id": doc["@id"]})
+        check = self.build.mongod.base.find_one({"@id": doc["@id"]})
         if check is None:
             # body is not in the KB, create resource
-            body_id = self.db.base.insert(doc)
-            body_doc = self.db.base.find_one({"_id": body_id})
+            body_id = self.build.mongod.base.insert(doc)
+            body_doc = self.build.mongod.base.find_one({"_id": body_id})
             print(body_doc["@id"])
 
             # append to memberList of collection
             blank = self.concept_utilities.find_or_create_collection("_:bodies1", self.coll)
             try:
-                self.connection.append_link_to_mongodoc(blank, "skos:memberList", body_doc, "base")
+                self.build.append_link_to_mongodoc(blank, "skos:memberList", body_doc, "base")
             except DocumentExists:
                 pass
 

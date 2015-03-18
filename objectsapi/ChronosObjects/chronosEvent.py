@@ -22,9 +22,8 @@ exceptions = {"ARTEMIS": "THEMIS", "MAFL": "Astrobiology_Field_Laboratory", "Spu
 
 
 class CHRONOSEvent:
-    def __init__(self, old_id, obj):
-        self.connection = Wrapper()
-        self.db = self.connection.return_mongo()
+    def __init__(self, build, old_id, obj):
+        self.build = build  # instance of Build
         self.js_obj = obj
         self.old_id = old_id
 
@@ -38,17 +37,17 @@ class CHRONOSEvent:
         target = first[first.find(' - ')+3:].strip()
         print(name, target, self.old_id)
 
-        mssn = self.db.base.find_one({"chronos:group": "missions", "chronos:oldId": self.old_id})
+        mssn = self.build.mongod.base.find_one({"chronos:group": "missions", "chronos:oldId": self.old_id})
         if mssn is None:
-            mssn = self.db.base.find_one({"chronos:group": "missions", "chronos:slug": name})
+            mssn = self.build.mongod.base.find_one({"chronos:group": "missions", "chronos:slug": name})
             if mssn is None:
-                mssn = self.db.base.find_one({"chronos:group": "missions", "chronos:codename": name})
+                mssn = self.build.mongod.base.find_one({"chronos:group": "missions", "chronos:codename": name})
                 if mssn is None:
-                    mssn = self.db.base.find_one({"chronos:group": "missions", "skos:prefLabel": "\/"+name+"\/i"})
+                    mssn = self.build.mongod.base.find_one({"chronos:group": "missions", "skos:prefLabel": "\/"+name+"\/i"})
                     if mssn is None and name in exceptions.keys():
-                        mssn = self.db.base.find_one({"chronos:group": "missions", "skos:prefLabel": exceptions[name]})
+                        mssn = self.build.mongod.base.find_one({"chronos:group": "missions", "skos:prefLabel": exceptions[name]})
                         if mssn is None and name in exceptions.keys():
-                            mssn = self.db.base.find_one({"chronos:group": "missions", "chronos:slug": exceptions[name]})
+                            mssn = self.build.mongod.base.find_one({"chronos:group": "missions", "chronos:slug": exceptions[name]})
     
         for e in self.js_obj:
             hashed = b64encode(str(e["mission"] + str(e["id"])).encode(encoding='UTF-8'), avoid).decode(encoding='UTF-8')
@@ -76,10 +75,10 @@ class CHRONOSEvent:
                     "@value": content,
                 }
 
-            if not self.db.base.find_one({"@id": this_id}):
-                id_ = self.db.base.insert(event)
-                this_doc = self.db.base.find_one({"_id": ObjectId(id_)})
+            if not self.build.mongod.base.find_one({"@id": this_id}):
+                id_ = self.build.mongod.base.insert(event)
+                this_doc = self.build.mongod.base.find_one({"_id": ObjectId(id_)})
                 if mssn is not None:
-                    self.connection.append_link_to_mongodoc(this_doc, "chronos:relMission", mssn, "base")
+                    self.build.append_link_to_mongodoc(this_doc, "chronos:relMission", mssn, "base")
                 else:
                     raise DocumentExistNot("EVENTS API: This mission is not in the DB")

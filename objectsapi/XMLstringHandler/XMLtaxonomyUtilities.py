@@ -16,23 +16,22 @@ class SKOSconcepts():
     :method store_broader: check and store a skos:broader link into a skos:Concept document in the cloud
     :method store_narrower: check and store a skos:narrower link into a skos:Concept document in the cloud
     """
-    def __init__(self):
-        self.connection = Wrapper()
-        self.db = self.connection.return_mongo()
-        self.provider = self.db.base.find_one({
+    def __init__(self, build):
+        self.build = build  # instance of Build
+        self.provider = self.build.mongod.base.find_one({
             "@id": RESOURCE_URL % ("organization", "NASA+Sientific+and+Technical+Information+Program")
         })
 
     def find_or_create_scheme(self, at_id, scheme):
-        check = self.db.base.find_one({"@id": at_id})
+        check = self.build.mongod.base.find_one({"@id": at_id})
         if not check:
             pprint("Store" + str(scheme))
             scheme["@id"] = at_id
             scheme["skos:prefLabel"] = "reference scheme for subject number " + at_id
-            self.db.base.insert(scheme)
-            new_scheme = self.db.base.find_one({"@id": at_id})
+            self.build.mongod.base.insert(scheme)
+            new_scheme = self.build.mongod.base.find_one({"@id": at_id})
             try:
-                self.connection.append_link_to_mongodoc(new_scheme, "schema:provider", self.provider, "base")
+                self.build.append_link_to_mongodoc(new_scheme, "schema:provider", self.provider, "base")
             except DocumentExists:
                 pass
             return new_scheme
@@ -40,13 +39,13 @@ class SKOSconcepts():
         return check
 
     def find_or_create_collection(self, at_id, collection):
-        check = self.db.base.find_one({"@id": at_id})
+        check = self.build.mongod.base.find_one({"@id": at_id})
         if not check:
             pprint("Store" + str(collection))
-            self.db.base.insert(collection)
-            new_coll = self.db.base.find_one({"@id": at_id})
+            self.build.mongod.base.insert(collection)
+            new_coll = self.build.mongod.base.find_one({"@id": at_id})
             try:
-                self.connection.append_link_to_mongodoc(new_coll, "schema:provider", self.provider, "base")
+                self.build.append_link_to_mongodoc(new_coll, "schema:provider", self.provider, "base")
             except DocumentExists:
                 pass
 
@@ -62,7 +61,7 @@ class SKOSconcepts():
         :return: (pref_label, this_id)
         """
         pref_label = concept.find("skos:preflabel").string
-        print(">>>>>>>>>>>>>>>>>>>>> pref_labe: " + pref_label)
+        print(">>>>>>>>>>>>>>>>>>>>> pref_label: " + pref_label)
         label = pref_label.lower()
         url_label = label.replace(' ', '+').replace(',', '')
         this_id = RESOURCE_URL % (category, url_label)
@@ -88,7 +87,7 @@ class SKOSconcepts():
         :param concept: a Concept's BS4 object
         :return:
         """
-        check = self.db.base.find_one({"skos:prefLabel": concept.find("skos:preflabel").string})
+        check = self.build.mongod.base.find_one({"skos:prefLabel": concept.find("skos:preflabel").string})
         if check is not None:
             return check
 
@@ -102,7 +101,7 @@ class SKOSconcepts():
             return
 
         try:
-            return self.connection.append_link_to_mongodoc(document, "skos:broader", concept, "base")
+            return self.build.append_link_to_mongodoc(document, "skos:broader", concept, "base")
         except DocumentExists:
             return None
 
@@ -114,6 +113,6 @@ class SKOSconcepts():
             return
 
         try:
-            return self.connection.append_link_to_mongodoc(document, "skos:narrower", concept, "base")
+            return self.build.append_link_to_mongodoc(document, "skos:narrower", concept, "base")
         except DocumentExists:
             return None

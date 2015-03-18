@@ -20,5 +20,5 @@ class Test(unittest.TestCase):
     built = Build()
 
     @classmethod
-    def test_tag_keywords_and_subjects(cls):
-        cls.built.tag_keywords_and_subjects()
+    def test_tag_keywords_and_subjects(cls, test):
+        cls.built.add_hierarchical_links_among_concepts(test=test)

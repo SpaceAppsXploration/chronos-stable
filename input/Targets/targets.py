@@ -216,7 +216,7 @@ Chronos_Targets = [
     },
     {
         "id": 19,
-        "name": "67P/Churyumov-Gerasimenko Comet",
+        "name": "Churyumov-Gerasimenko Comet",
         "slug": "67P/Churyumov–Gerasimenko",
         "body_type": ONTOLOGY + "Comet",
         "image_url": "http://www.esa.int/var/esa/storage/images/esa_multimedia/images/2014/07/comet_on_14_july_2014/14628832-1-eng-GB/Comet_on_14_July_2014.png",

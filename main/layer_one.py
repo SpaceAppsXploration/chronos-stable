@@ -12,8 +12,10 @@ def deploy_layer_one():
 
     building.add_events()
 
+    building.add_sensors()
+
     building.link_targets_and_events()
 
-    building.semantic_links_for_missions()
+    building.link_missions()
 
     building.relate_stored_dbpedias()
