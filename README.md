@@ -4,8 +4,11 @@ Chronos-stable
 # Deploy Pramantha Datastore
 
 This software takes as input a lot of data coming from scattered sources, to dump it into a MongoDB instance that stores documents as Linked Data. LD dictionaries are also provided. 
-The dumping (`main/`) takes place with different layers of data, each layer adds more data and improve links between existing data. Different entities are tagged with TagME API, there is also a basic and raw scraping utility for Webpages implemented.<br/>
-Types of entities stored can be found [here](https://github.com/SpaceAppsXploration/chronos-stable/blob/master/objectsapi/basicDocs.py)
+The dumping (`main/`) takes place with different layers of data, each layer adds more data and improve links between existing data. A uncomplete description of the process can be found (here)[https://docs.google.com/document/d/1w5ndqSWiWaIzo4wlsJcfqQ2hOSaEyhf_w-u2nuxtNs0/edit?usp=sharing].<br/>
+Different entities are tagged with TagME API, there is also a basic and raw scraping utility for Webpages implemented.<br/>
+Types of entities stored can be found [here](https://github.com/SpaceAppsXploration/chronos-stable/blob/master/objectsapi/basicDocs.py).<br/>
+Schema about the resulting graph of object classes can be found (here)[https://docs.google.com/drawings/d/19YG8fZo_7n1roV97VRtT1lxmQMvtOAi9yAQKVuW5Ifc/edit?usp=sharing].<br/>
+
 
 Main scripts and libraries to create a multi-database instance of Pramantha's Datastore, with data from static modules (`input/` directory), websites
 crawling and TagMe API's results.
