@@ -3,7 +3,7 @@ Chronos-stable
 
 # Deploy Pramantha Datastore
 
-See the [wiki](https://github.com/SpaceAppsXploration/StartPramanthaUp/wiki) also<br/><br/>
+This software takes as input a lot of data coming from scattered sources, to dump it into a MongoDB instance that stores documents as Linked Data. LD dictionaries are also provided. 
 
 Main scripts and libraries to create a multi-database instance of Pramantha's Datastore, with data from static modules (`input/` directory), websites
 crawling and TagMe API's results.
