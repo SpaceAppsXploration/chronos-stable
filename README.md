@@ -3,9 +3,6 @@ Chronos-stable
 
 # Deploy Pramantha Datastore
 
-
-All the information needed to understand this deployment is in [this document](https://docs.google.com/document/d/1-orx3LYcBDNjy6AG1jC0Mgf1AgEVxXv2A42pxpJsvh8/edit#)
-<br/>
 See the [wiki](https://github.com/SpaceAppsXploration/StartPramanthaUp/wiki) also<br/><br/>
 
 Main scripts and libraries to create a multi-database instance of Pramantha's Datastore, with data from static modules (`input/` directory), websites
